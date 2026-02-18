@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, View } from 'react-native';
+import { FlatList, Text, View } from 'react-native';
 import ForwardBar from './ForwardBar';
 import PayForwardFeedItem from './PayForwardFeedItem';
 
