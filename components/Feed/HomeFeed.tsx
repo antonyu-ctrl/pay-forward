@@ -27,10 +27,24 @@ const FEED_DATA = [
     },
 ];
 
+import { Ionicons } from '@expo/vector-icons'; // Added import
+
+// ... imports
+
 const HomeFeed = () => {
     return (
         <View className="flex-1 bg-gray-50 items-center">
             <View className="w-full max-w-md h-full bg-white shadow-sm overflow-hidden">
+                {/* Mobile Header - Centered Logo */}
+                <View className="items-center justify-center py-3 border-b border-gray-100 bg-white z-20">
+                    <View className="flex-row items-center">
+                        <View className="w-7 h-7 bg-sky-500 rounded-lg items-center justify-center mr-2">
+                            <Ionicons name="heart" size={16} color="white" />
+                        </View>
+                        <Text className="text-lg font-bold text-gray-900 tracking-tight">PayForward</Text>
+                    </View>
+                </View>
+
                 <View className="bg-white z-10">
                     <ForwardBar />
                 </View>
