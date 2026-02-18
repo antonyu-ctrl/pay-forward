@@ -1,13 +1,16 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+
+const { width } = Dimensions.get('window');
 
 interface Props {
     initialBranching?: number;
     initialDepth?: number;
     onChange: (branching: number, depth: number) => void;
 }
+
 
 export default function ImpactCalculator({ initialBranching = 2, initialDepth = 3, onChange }: Props) {
     const [branching, setBranching] = useState(initialBranching);
@@ -27,7 +30,7 @@ export default function ImpactCalculator({ initialBranching = 2, initialDepth = 
     const scale = useSharedValue(1);
 
     useEffect(() => {
-        scale.value = withSpring(1.2, {}, () => {
+        scale.value = withSpring(1.1, {}, () => {
             scale.value = withSpring(1);
         });
     }, [totalPeople]);

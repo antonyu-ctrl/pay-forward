@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 // Components
 import ImpactCalculator from '../../components/Forward/ImpactCalculator';
@@ -17,13 +17,12 @@ export default function CreateForwardScreen() {
     const [recipients, setRecipients] = useState<string[]>([]);
 
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showWarningModal, setShowWarningModal] = useState(false);
 
     const handleIgnite = () => {
         // Validation: Must match branching count exactly
         if (recipients.length !== branching) {
-            const msg = `Please invite exactly ${branching} people to match your rule.`;
-            if (Platform.OS === 'web') alert(msg);
-            else Alert.alert('Invite More Friends', msg, [{ text: 'OK' }]);
+            setShowWarningModal(true);
             return;
         }
 
@@ -151,6 +150,28 @@ export default function CreateForwardScreen() {
                                         <Text className="text-white font-bold">Yes, Let's Go</Text>
                                     </TouchableOpacity>
                                 </View>
+                            </View>
+                        </View>
+                    )}
+
+                    {/* Friendly Warning Modal */}
+                    {showWarningModal && (
+                        <View className="absolute inset-0 z-50 bg-black/50 items-center justify-center p-6">
+                            <View className="bg-white rounded-2xl p-6 w-full max-w-sm items-center shadow-2xl">
+                                <View className="w-12 h-12 bg-orange-100 rounded-full items-center justify-center mb-4">
+                                    <Feather name="users" size={24} color="#F97316" />
+                                </View>
+                                <Text className="text-lg font-bold text-gray-900 mb-2">Almost Ready!</Text>
+                                <Text className="text-gray-500 text-center mb-6 leading-relaxed">
+                                    To spread the love as you planned, please invite exactly <Text className="font-bold text-gray-800">{branching}</Text> friends.
+                                    {'\n'}Currently selected: <Text className="font-bold text-orange-500">{recipients.length}</Text>
+                                </Text>
+                                <TouchableOpacity
+                                    onPress={() => setShowWarningModal(false)}
+                                    className="w-full py-3 bg-sky-500 rounded-xl items-center"
+                                >
+                                    <Text className="text-white font-bold">Okay, I'll add more</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     )}
