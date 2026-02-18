@@ -11,9 +11,10 @@ import {
 } from 'react-native';
 import Animated, {
     Extrapolation,
+    SharedValue,
     interpolate,
     useAnimatedStyle,
-    useSharedValue,
+    useSharedValue
 } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
@@ -73,7 +74,7 @@ interface Props {
     selectedDetails?: CategoryType;
 }
 
-const CategoryCard = ({ item, index, scrollX, isSelected }: { item: Category, index: number, scrollX: Animated.SharedValue<number>, isSelected: boolean }) => {
+const CategoryCard = ({ item, index, scrollX, isSelected }: { item: Category, index: number, scrollX: SharedValue<number>, isSelected: boolean }) => {
     const animatedStyle = useAnimatedStyle(() => {
         const inputRange = [
             (index - 1) * CARD_WIDTH,
@@ -105,7 +106,7 @@ const CategoryCard = ({ item, index, scrollX, isSelected }: { item: Category, in
         <Animated.View style={[animatedStyle, { width: CARD_WIDTH }]} className="h-[400px] px-2">
             <TouchableOpacity activeOpacity={0.9} className="flex-1">
                 <LinearGradient
-                    colors={item.colors}
+                    colors={item.colors as any}
                     className="flex-1 rounded-3xl p-6 justify-between shadow-lg"
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
@@ -120,14 +121,16 @@ const CategoryCard = ({ item, index, scrollX, isSelected }: { item: Category, in
                         <Text className="text-white/90 text-lg font-medium">{item.subtitle}</Text>
                     </View>
 
-                    {isSelected && (
-                        <View className="absolute top-6 right-6 bg-white rounded-full p-2">
-                            <Feather name="check" size={20} color={item.colors[0]} />
-                        </View>
-                    )}
-                </LinearGradient>
-            </TouchableOpacity>
-        </Animated.View>
+                    {
+                        isSelected && (
+                            <View className="absolute top-6 right-6 bg-white rounded-full p-2">
+                                <Feather name="check" size={20} color={item.colors[0]} />
+                            </View>
+                        )
+                    }
+                </LinearGradient >
+            </TouchableOpacity >
+        </Animated.View >
     );
 };
 

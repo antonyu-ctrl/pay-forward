@@ -16,20 +16,44 @@ export default function CreateForwardScreen() {
     const [depth, setDepth] = useState(3);
     const [recipients, setRecipients] = useState<string[]>([]);
 
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+
     const handleIgnite = () => {
-        if (recipients.length < 1) {
-            const msg = "Please invite at least one person to start the chain.";
+        // Validation: Must match branching count exactly
+        if (recipients.length !== branching) {
+            const msg = `Please invite exactly ${branching} people to match your rule.`;
             if (Platform.OS === 'web') alert(msg);
-            else Alert.alert('Missing Info', msg);
+            else Alert.alert('Invite More Friends', msg, [{ text: 'OK' }]);
             return;
         }
 
-        console.log('Igniting Chain!', { category, branching, depth, recipients });
-        router.push('/(tabs)');
+        // Show Custom Confirmation Modal
+        setShowConfirmModal(true);
+    };
+
+    const proceedToFeed = () => {
+        setShowConfirmModal(false); // Close modal
+
+
+        try {
+            router.push({
+                pathname: '/feed/create',
+                params: {
+                    origin: 'new_chain',
+                    category,
+                    branching,
+                    depth,
+                    recipients: JSON.stringify(recipients)
+                }
+            });
+        } catch (error) {
+            console.error("Navigation error:", error);
+            alert("Navigation Error. Please restart the app.");
+        }
     };
 
     return (
-        <View className="flex-1 bg-gray-50 items-center">
+        <View className="flex-1 bg-gray-50 items-center relative">
             <Stack.Screen options={{ headerShown: false }} />
             <View className="w-full max-w-md h-full bg-white shadow-sm overflow-hidden">
                 <SafeAreaView className="flex-1 bg-white">
@@ -90,16 +114,46 @@ export default function CreateForwardScreen() {
                                 <TouchableOpacity
                                     onPress={handleIgnite}
                                     activeOpacity={0.8}
-                                    className="w-full bg-sky-500 py-4 rounded-xl items-center shadow-lg shadow-sky-100"
+                                    className="w-full bg-sky-500 py-4 rounded-xl items-center justify-center shadow-lg shadow-sky-100 flex-row gap-2"
                                 >
                                     <Text className="text-white font-bold text-base">
-                                        Ignite Chain 🔥
+                                        Ignite Chain
                                     </Text>
+                                    <Feather name="zap" size={20} color="white" />
                                 </TouchableOpacity>
                             </View>
 
                         </ScrollView>
                     </KeyboardAvoidingView>
+
+                    {/* Custom Confirmation Modal */}
+                    {showConfirmModal && (
+                        <View className="absolute inset-0 z-50 bg-black/50 items-center justify-center p-6">
+                            <View className="bg-white rounded-2xl p-6 w-full max-w-sm items-center shadow-2xl">
+                                <View className="w-12 h-12 bg-sky-100 rounded-full items-center justify-center mb-4">
+                                    <Feather name="check" size={24} color="#0EA5E9" />
+                                </View>
+                                <Text className="text-lg font-bold text-gray-900 mb-2">Ready to Inspire?</Text>
+                                <Text className="text-gray-500 text-center mb-6 leading-relaxed">
+                                    You should have already performed the first act of kindness. Are you ready to post your story?
+                                </Text>
+                                <View className="flex-row w-full gap-3">
+                                    <TouchableOpacity
+                                        onPress={() => setShowConfirmModal(false)}
+                                        className="flex-1 py-3 bg-gray-100 rounded-xl items-center"
+                                    >
+                                        <Text className="text-gray-700 font-bold">Not Yet</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={proceedToFeed}
+                                        className="flex-1 py-3 bg-sky-500 rounded-xl items-center"
+                                    >
+                                        <Text className="text-white font-bold">Yes, Let's Go</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </View>
+                    )}
 
                 </SafeAreaView>
             </View>

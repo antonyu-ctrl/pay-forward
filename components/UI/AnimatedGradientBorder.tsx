@@ -46,7 +46,7 @@ const AnimatedGradientBorder: React.FC<AnimatedGradientBorderProps> = ({
             {/* Rotating Gradient Background */}
             <Animated.View style={[StyleSheet.absoluteFill, animatedStyle]}>
                 <LinearGradient
-                    colors={colors}
+                    colors={colors as any}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={{ width: '100%', height: '100%', borderRadius: size / 2 }}
