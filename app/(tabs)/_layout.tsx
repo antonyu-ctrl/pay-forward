@@ -51,6 +51,13 @@ export default function TabLayout() {
             tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
           }}
         />
+        <Tabs.Screen
+          name="create-forward"
+          options={{
+            href: null, // Hide from tab bar
+            title: 'New Chain',
+          }}
+        />
       </Tabs>
     </>
   );
