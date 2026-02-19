@@ -1,10 +1,9 @@
-import { useFocusEffect } from 'expo-router';
-import React, { useState } from 'react';
-import { Platform, SafeAreaView, ScrollView, View } from 'react-native';
+import React from 'react';
+import { Platform, ScrollView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import ProfileContent from '../../components/Profile/ProfileContent';
 import ProfileHeader from '../../components/Profile/ProfileHeader';
 import ProfileInfo from '../../components/Profile/ProfileInfo';
-import ProfileTabs from '../../components/Profile/ProfileTabs';
 
 // Mock Data
 const USER = {
@@ -55,15 +54,10 @@ const POSTS = [
 ];
 
 export default function ProfileScreen() {
-  const [activeTab, setActiveTab] = useState<'grid' | 'reels' | 'tagged'>('grid');
-
-  // Force re-render on focus if needed, but mainly ensuring layout here
-  useFocusEffect(() => { });
-
   return (
     <View
       className="flex-1 bg-white items-center"
-      style={Platform.OS === 'web' ? { height: '100vh' } : { flex: 1 }}
+      style={Platform.OS === 'web' ? ({ height: '100vh' } as any) : { flex: 1 }}
     >
       <View className="w-full max-w-md flex-1 bg-white shadow-sm overflow-hidden flex flex-col">
         <SafeAreaView className="flex-1 bg-white" edges={['top']}>
@@ -76,15 +70,9 @@ export default function ProfileScreen() {
           <ScrollView
             className="flex-1"
             showsVerticalScrollIndicator={false}
-            stickyHeaderIndices={[1]} // Sticky Tabs (Index 1 now, after removing Highlights)
           >
             {/* Profile Info */}
             <ProfileInfo user={USER} />
-
-            {/* Tabs (Sticky) */}
-            <View className="bg-white z-10 shadow-sm">
-              <ProfileTabs activeTab={activeTab} onTabChange={setActiveTab} />
-            </View>
 
             {/* Grid Content */}
             <ProfileContent posts={POSTS} />

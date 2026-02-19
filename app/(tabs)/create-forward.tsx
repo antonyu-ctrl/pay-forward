@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, SafeAreaView, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 // Components
 import ImpactCalculator from '../../components/Forward/ImpactCalculator';
@@ -52,10 +52,13 @@ export default function CreateForwardScreen() {
     };
 
     return (
-        <View className="flex-1 bg-gray-50 items-center relative">
+        <View
+            className="flex-1 bg-gray-50 items-center relative"
+            style={Platform.OS === 'web' ? { height: '100vh' as any } : { flex: 1 }}
+        >
             <Stack.Screen options={{ headerShown: false }} />
-            <View className="w-full max-w-md h-full bg-white shadow-sm overflow-hidden">
-                <SafeAreaView className="flex-1 bg-white">
+            <View className="w-full max-w-md bg-white shadow-sm overflow-hidden flex-1">
+                <View className="flex-1 bg-white">
 
                     {/* Header */}
                     <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-50 bg-white z-10">
@@ -176,7 +179,7 @@ export default function CreateForwardScreen() {
                         </View>
                     )}
 
-                </SafeAreaView>
+                </View>
             </View>
         </View>
     );

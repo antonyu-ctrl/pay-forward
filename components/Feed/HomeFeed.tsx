@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, Text, View } from 'react-native';
+import { FlatList, Platform, Text, View } from 'react-native';
 import ForwardBar from './ForwardBar';
 import PayForwardFeedItem from './PayForwardFeedItem';
 
@@ -33,8 +33,11 @@ import { Ionicons } from '@expo/vector-icons'; // Added import
 
 const HomeFeed = () => {
     return (
-        <View className="flex-1 bg-gray-50 items-center">
-            <View className="w-full max-w-md h-full bg-white shadow-sm overflow-hidden">
+        <View
+            className="flex-1 bg-gray-50 items-center"
+            style={Platform.OS === 'web' ? { height: '100vh' as any } : { flex: 1 }}
+        >
+            <View className="w-full max-w-md flex-1 bg-white shadow-sm overflow-hidden">
                 {/* Mobile Header - Centered Logo */}
                 <View className="items-center justify-center py-3 border-b border-gray-100 bg-white z-20">
                     <View className="flex-row items-center">
