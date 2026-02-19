@@ -113,7 +113,7 @@ export default function MyForwardScreen() {
     // Aggregate Stats (only count 'ignited' chains as requested)
     const ignitedChains = chains.filter(c => c.type === 'ignited');
     const totalImpact = ignitedChains.reduce((acc, chain) => acc + chain.stats.impact, 0);
-    const activeChainsCount = ignitedChains.filter(c => !c.isArchived).length;
+    const activeChainsCount = ignitedChains.length; // Count all ignited chains regardless of status
     const totalGenerations = ignitedChains.reduce((acc, chain) => acc + chain.stats.generation, 0);
 
     // Filter Logic
