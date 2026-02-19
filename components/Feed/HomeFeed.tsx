@@ -25,6 +25,16 @@ const FEED_DATA = [
         caption: 'Passed on the kindness by helping Mark with his moving boxes. Paying it forward!',
         likesCount: 56,
     },
+    {
+        id: '3',
+        avatarUrl: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1760&q=80',
+        username: 'sarah_writer',
+        timeAgo: '1d ago',
+        // No mainImageUrl for text-only post
+        forwardedTo: '@community_center',
+        caption: 'Just dropped off some books at the local community center. Reading can change lives! 📚✨ Hope they find good homes.',
+        likesCount: 15,
+    },
 ];
 
 import { Ionicons } from '@expo/vector-icons'; // Added import

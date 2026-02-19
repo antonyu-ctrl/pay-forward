@@ -6,7 +6,7 @@ interface FeedItemProps {
     avatarUrl: string;
     username: string;
     timeAgo: string;
-    mainImageUrl: string;
+    mainImageUrl?: string; // Optional for text-only posts
     forwardedTo: string; // Changed back to single string (1 Feed = 1 Person)
     caption: string;
     likesCount?: number;
@@ -40,16 +40,18 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = ({
                 </View>
             </View>
 
-            {/* Main Visual */}
-            <View className="relative w-full aspect-square bg-gray-100">
-                <Image source={{ uri: mainImageUrl }} className="w-full h-full resize-cover" />
+            {/* Main Visual - Only render if mainImageUrl exists */}
+            {mainImageUrl && (
+                <View className="relative w-full aspect-square bg-gray-100">
+                    <Image source={{ uri: mainImageUrl }} className="w-full h-full resize-cover" />
 
-                {/* Hand Holding Heart Icon Overlay */}
-                <View className="absolute top-4 left-4 bg-white/90 w-10 h-10 rounded-full items-center justify-center shadow-sm border border-gray-100/50">
-                    <MaterialCommunityIcons name="hand-heart" size={20} color="#0EA5E9" />
-                    {/* Green intent for "Pay It Forward" action */}
+                    {/* Hand Holding Heart Icon Overlay */}
+                    <View className="absolute top-4 left-4 bg-white/90 w-10 h-10 rounded-full items-center justify-center shadow-sm border border-gray-100/50">
+                        <MaterialCommunityIcons name="hand-heart" size={20} color="#0EA5E9" />
+                        {/* Green intent for "Pay It Forward" action */}
+                    </View>
                 </View>
-            </View>
+            )}
 
             {/* Forward Tagging */}
             <View className="px-4 mt-3">
