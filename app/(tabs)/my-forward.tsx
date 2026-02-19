@@ -217,7 +217,7 @@ export default function MyForwardScreen() {
             {/* Archive Button (Bottom Right) - Only for Completed chains */}
             {item.status === 'Completed' && (
                 <TouchableOpacity
-                    className="absolute bottom-4 right-4 p-2 bg-gray-50 rounded-full border border-gray-100"
+                    className="absolute bottom-4 right-4 p-2"
                     onPress={() => toggleArchive(item.id)}
                 >
                     <Feather
