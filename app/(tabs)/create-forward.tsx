@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 // Components
 import ImpactCalculator from '../../components/Forward/ImpactCalculator';
@@ -11,6 +11,8 @@ import MiniCategorySelector, { CategoryType } from '../../components/Forward/Min
 export default function CreateForwardScreen() {
     const router = useRouter();
 
+    const [title, setTitle] = useState('');
+    const [timeLimit, setTimeLimit] = useState('');
     const [category, setCategory] = useState<CategoryType>('coffee');
     const [branching, setBranching] = useState(2);
     const [depth, setDepth] = useState(3);
@@ -20,6 +22,15 @@ export default function CreateForwardScreen() {
     const [showWarningModal, setShowWarningModal] = useState(false);
 
     const handleIgnite = () => {
+        if (!title.trim()) {
+            if (Platform.OS === 'web') {
+                alert('Please give your chain a title!');
+            } else {
+                Alert.alert('Missing Title', 'Please give your chain a catchy title!');
+            }
+            return;
+        }
+
         // Validation: Must match branching count exactly
         if (recipients.length !== branching) {
             setShowWarningModal(true);
@@ -39,6 +50,8 @@ export default function CreateForwardScreen() {
                 pathname: '/feed/create',
                 params: {
                     origin: 'new_chain',
+                    title,
+                    timeLimit,
                     category,
                     branching,
                     depth,
@@ -82,6 +95,18 @@ export default function CreateForwardScreen() {
                             showsVerticalScrollIndicator={false}
                         >
 
+                            {/* Section 0: Title */}
+                            <View className="mb-8">
+                                <Text className="text-xs font-bold text-gray-500 mb-3 px-1 tracking-widest">CHAIN TITLE</Text>
+                                <TextInput
+                                    className="bg-white p-4 rounded-2xl border border-gray-100 text-base font-bold text-gray-900"
+                                    placeholder="e.g., Morning Coffee Relay"
+                                    placeholderTextColor="#9CA3AF"
+                                    value={title}
+                                    onChangeText={setTitle}
+                                />
+                            </View>
+
                             {/* Section 1: Theme */}
                             <View className="mb-8">
                                 <MiniCategorySelector selected={category} onSelect={setCategory} />
@@ -91,6 +116,22 @@ export default function CreateForwardScreen() {
                             <View className="mb-8">
                                 <Text className="text-xs font-bold text-gray-500 mb-3 px-1 tracking-widest">DESIGN RULES</Text>
                                 <View className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                                    <View className="mb-4 pb-4 border-b border-gray-100 flex-row items-center justify-between">
+                                        <View>
+                                            <Text className="text-gray-600 font-medium text-sm">Hours to Forward</Text>
+                                            <Text className="text-xs text-gray-400 mt-0.5">Time limit (hours)</Text>
+                                        </View>
+                                        <TextInput
+                                            className="bg-gray-50 w-28 h-10 rounded-xl border border-gray-200 text-base font-bold text-gray-900 text-center"
+                                            placeholder="24"
+                                            placeholderTextColor="#9CA3AF"
+                                            keyboardType="number-pad"
+                                            maxLength={3}
+                                            value={timeLimit}
+                                            onChangeText={(text) => setTimeLimit(text.replace(/[^0-9]/g, ''))}
+                                        />
+                                    </View>
+
                                     <ImpactCalculator
                                         initialBranching={branching}
                                         initialDepth={depth}

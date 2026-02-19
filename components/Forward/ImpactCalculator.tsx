@@ -67,26 +67,28 @@ export default function ImpactCalculator({ initialBranching = 2, initialDepth = 
                     </View>
                 </View>
 
+
+
                 {/* Depth Control */}
                 <View className="flex-row items-center justify-between">
                     <Text className="text-gray-600 font-medium text-sm">Generations</Text>
-                    <View className="flex-row items-center bg-white rounded-full border border-gray-200 px-1 py-1">
+                    <View className="flex-row items-center bg-white rounded-full border border-gray-200 px-1 py-1 w-28" style={{ justifyContent: 'space-between' }}>
                         <TouchableOpacity
                             onPress={() => setDepth(Math.max(2, depth - 1))}
-                            className="w-7 h-7 bg-gray-50 rounded-full items-center justify-center"
+                            className="w-8 h-8 bg-gray-50 rounded-full items-center justify-center"
                         >
-                            <Feather name="minus" size={14} color="#6B7280" />
+                            <Feather name="minus" size={16} color="#4B5563" />
                         </TouchableOpacity>
 
-                        <Text className="text-sm font-bold text-gray-800 w-8 text-center">
+                        <Text className="text-base font-bold text-gray-900 w-8 text-center">
                             {depth}
                         </Text>
 
                         <TouchableOpacity
                             onPress={() => setDepth(Math.min(10, depth + 1))}
-                            className="w-7 h-7 bg-gray-50 rounded-full items-center justify-center"
+                            className="w-8 h-8 bg-gray-50 rounded-full items-center justify-center"
                         >
-                            <Feather name="plus" size={14} color="#6B7280" />
+                            <Feather name="plus" size={16} color="#4B5563" />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -104,6 +106,6 @@ export default function ImpactCalculator({ initialBranching = 2, initialDepth = 
                     {totalPeople.toLocaleString()}
                 </Animated.Text>
             </View>
-        </View>
+        </View >
     );
 }
