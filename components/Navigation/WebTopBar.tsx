@@ -32,7 +32,7 @@ export default function WebTopBar() {
                         <Text className={`ml-2 font-medium ${isActive('/my-forward') ? 'text-sky-500' : 'text-gray-600'}`}>My Forward</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => router.push('/profile' as any)} className="flex-row items-center">
+                    <TouchableOpacity onPress={() => router.push('/profile')} className="flex-row items-center">
                         <Feather name="user" size={20} color={isActive('/profile') ? '#0EA5E9' : '#4B5563'} />
                         <Text className={`ml-2 font-medium ${isActive('/profile') ? 'text-sky-500' : 'text-gray-600'}`}>Profile</Text>
                     </TouchableOpacity>

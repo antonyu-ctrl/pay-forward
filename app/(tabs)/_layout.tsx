@@ -45,7 +45,7 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="two" // Keeping this as Profile or similar for now, renamed in title
+          name="profile"
           options={{
             title: 'Profile',
             tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
