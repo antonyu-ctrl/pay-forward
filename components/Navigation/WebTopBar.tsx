@@ -39,6 +39,11 @@ export default function WebTopBar() {
                         <Text className={`ml-2 font-medium ${isActive('/inbox') ? 'text-sky-500' : 'text-gray-600'}`}>Inbox</Text>
                     </TouchableOpacity>
 
+                    <TouchableOpacity onPress={() => router.push('/search')} className="flex-row items-center">
+                        <Feather name="search" size={20} color={isActive('/search') ? '#0EA5E9' : '#4B5563'} />
+                        <Text className={`ml-2 font-medium ${isActive('/search') ? 'text-sky-500' : 'text-gray-600'}`}>Search</Text>
+                    </TouchableOpacity>
+
                     <TouchableOpacity onPress={() => router.push('/profile')} className="flex-row items-center">
                         <Feather name="user" size={20} color={isActive('/profile') ? '#0EA5E9' : '#4B5563'} />
                         <Text className={`ml-2 font-medium ${isActive('/profile') ? 'text-sky-500' : 'text-gray-600'}`}>Profile</Text>
