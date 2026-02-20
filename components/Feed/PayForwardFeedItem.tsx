@@ -22,74 +22,84 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = ({
     likesCount = 0,
 }) => {
     return (
-        <View className="bg-white mb-6 border-b border-gray-100 pb-4">
-            {/* Header */}
-            <View className="flex-row items-center justify-between px-4 py-3">
-                <View className="flex-row items-center">
-                    <Image source={{ uri: avatarUrl }} className="w-9 h-9 rounded-full bg-gray-200" />
-                    <View className="ml-3">
-                        <Text className="font-semibold text-gray-900 text-[15px]">{username}</Text>
-                        {/* Optional: Location or sub-text could go here */}
-                    </View>
-                </View>
-                <View className="flex-row items-center">
-                    <Text className="text-gray-400 text-xs mr-3">{timeAgo}</Text>
-                    <TouchableOpacity>
-                        <Feather name="more-horizontal" size={20} color="#9CA3AF" />
-                    </TouchableOpacity>
-                </View>
+        <View className="bg-white border-b border-gray-100 flex-row px-4 py-3">
+            {/* Left Column: Avatar & Optional Thread Line */}
+            <View className="mr-3 items-center">
+                <Image source={{ uri: avatarUrl }} className="w-10 h-10 rounded-full bg-gray-200" />
             </View>
 
-            {/* Main Visual - Only render if mainImageUrl exists */}
-            {mainImageUrl && (
-                <View className="relative w-full aspect-square bg-gray-100">
-                    <Image source={{ uri: mainImageUrl }} className="w-full h-full resize-cover" />
-
-                    {/* Hand Holding Heart Icon Overlay */}
-                    <View className="absolute top-4 left-4 bg-white/90 w-10 h-10 rounded-full items-center justify-center shadow-sm border border-gray-100/50">
-                        <MaterialCommunityIcons name="hand-heart" size={20} color="#0EA5E9" />
-                        {/* Green intent for "Pay It Forward" action */}
+            {/* Right Column: Content */}
+            <View className="flex-1">
+                {/* Header */}
+                <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center space-x-1 flex-1">
+                        <Text className="font-bold text-gray-900 text-[15px]" numberOfLines={1}>{username}</Text>
+                        <MaterialCommunityIcons name="check-decagram" size={14} color="#0EA5E9" style={{ marginLeft: 2 }} />
+                        <Text className="text-gray-500 text-[14px] ml-1 flex-shrink" numberOfLines={1}>@{username.toLowerCase()} · {timeAgo}</Text>
                     </View>
+                    <TouchableOpacity>
+                        <Feather name="more-horizontal" size={18} color="#6B7280" />
+                    </TouchableOpacity>
                 </View>
-            )}
 
-            {/* Forward Tagging */}
-            <View className="px-4 mt-3">
                 {/* Forwarded Badge */}
-                <View className="flex-row items-center bg-sky-50 px-3 py-1 rounded-full self-start mb-1">
-                    <Feather name="corner-down-right" size={14} color="#0EA5E9" />
-                    <Text className="text-gray-600 text-xs ml-1">
-                        Forwarded to <Text className="font-bold text-sky-600">{forwardedTo}</Text>
+                <View className="flex-row items-center mt-0.5 mb-1.5 self-start">
+                    <Feather name="corner-down-right" size={12} color="#6B7280" />
+                    <Text className="text-gray-500 text-xs ml-1">
+                        Forwarded to <Text className="font-medium text-gray-700">{forwardedTo}</Text>
                     </Text>
                 </View>
-            </View>
 
-            {/* Action Bar */}
-            <View className="flex-row items-center justify-between px-4 mt-3">
-                <View className="flex-row items-center gap-4">
-                    <TouchableOpacity>
-                        <Ionicons name="heart-outline" size={26} color="#1F2937" />
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Ionicons name="chatbubble-outline" size={24} color="#1F2937" />
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Feather name="send" size={22} color="#1F2937" />
+                {/* Text Content */}
+                <Text className="text-gray-900 text-[15px] leading-5 mb-2.5">
+                    {caption}
+                </Text>
+
+                {/* Main Visual */}
+                {mainImageUrl && (
+                    <View className="w-full relative rounded-2xl overflow-hidden border border-gray-100 mb-3 bg-gray-100">
+                        <Image source={{ uri: mainImageUrl }} className="w-full aspect-[4/3] resize-cover" />
+
+                        {/* Hand Holding Heart Icon Overlay (Optional) */}
+                        <View className="absolute bottom-3 right-3 bg-black/60 w-8 h-8 rounded-full items-center justify-center">
+                            <MaterialCommunityIcons name="hand-heart" size={16} color="white" />
+                        </View>
+                    </View>
+                )}
+
+                {/* Action Bar (Twitter Style) */}
+                <View className="flex-row items-center justify-between text-gray-500 mt-1 pr-2">
+                    {/* Left Group: Reply, Repost, Like, Bookmark */}
+                    <View className="flex-row items-center gap-6">
+                        {/* Reply */}
+                        <TouchableOpacity className="flex-row items-center">
+                            <Feather name="message-circle" size={18} color="#6B7280" />
+                            <Text className="text-gray-500 text-xs ml-1.5">1</Text>
+                        </TouchableOpacity>
+
+                        {/* Repost/Forward */}
+                        <TouchableOpacity className="flex-row items-center">
+                            <Feather name="repeat" size={18} color="#6B7280" />
+                            <Text className="text-gray-500 text-xs ml-1.5">2</Text>
+                        </TouchableOpacity>
+
+                        {/* Like */}
+                        <TouchableOpacity className="flex-row items-center">
+                            <Ionicons name="heart-outline" size={19} color="#6B7280" />
+                            <Text className="text-gray-500 text-xs ml-1.5">{likesCount}</Text>
+                        </TouchableOpacity>
+
+                        {/* Bookmark */}
+                        <TouchableOpacity className="flex-row items-center">
+                            <Feather name="bookmark" size={18} color="#6B7280" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Share */}
+                    <TouchableOpacity className="flex-row items-center">
+                        <Feather name="share" size={18} color="#6B7280" />
                     </TouchableOpacity>
                 </View>
-
-                {/* Save / Bookmark */}
-                <TouchableOpacity>
-                    <Feather name="bookmark" size={24} color="#1F2937" />
-                </TouchableOpacity>
-            </View>
-
-            {/* Likes & Caption */}
-            <View className="px-4 mt-2.5">
-                <Text className="text-gray-900 font-bold text-sm mb-1">{likesCount > 0 ? `${likesCount} likes` : 'Be the first to like'}</Text>
-                <Text className="text-gray-800 text-[14.5px] leading-5">
-                    <Text className="font-bold mr-2">{username}</Text> {caption}
-                </Text>
             </View>
         </View>
     );
