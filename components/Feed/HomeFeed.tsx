@@ -1,5 +1,6 @@
 import React from 'react';
 import { FlatList, Platform, Text, View } from 'react-native';
+import ForwardBar from './ForwardBar';
 import PayForwardFeedItem from './PayForwardFeedItem';
 
 // Dummy Data
@@ -57,6 +58,9 @@ const HomeFeed = () => {
                     </View>
                 </View>
 
+                <View className="bg-white z-10">
+                    <ForwardBar />
+                </View>
                 <FlatList
                     data={FEED_DATA}
                     keyExtractor={(item) => item.id}
