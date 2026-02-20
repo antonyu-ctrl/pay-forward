@@ -24,6 +24,17 @@ const FEED_DATA = [
         forwardedTo: '@mark_k',
         caption: 'Passed on the kindness by helping Mark with his moving boxes. Paying it forward!',
         likesCount: 56,
+        replies: [
+            {
+                id: '2a',
+                avatarUrl: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
+                username: 'Anton_Yu',
+                timeAgo: '4h',
+                forwardedTo: '@mark_k',
+                caption: 'Love seeing this! I was just talking to Mark yesterday.',
+                likesCount: 12,
+            }
+        ]
     },
     {
         id: '3',
@@ -66,6 +77,7 @@ const HomeFeed = () => {
                     keyExtractor={(item) => item.id}
                     renderItem={({ item }) => (
                         <PayForwardFeedItem
+                            id={item.id}
                             avatarUrl={item.avatarUrl}
                             username={item.username}
                             timeAgo={item.timeAgo}
@@ -73,6 +85,7 @@ const HomeFeed = () => {
                             forwardedTo={item.forwardedTo}
                             caption={item.caption}
                             likesCount={item.likesCount}
+                            replies={item.replies}
                         />
                     )}
                     contentContainerStyle={{ paddingBottom: 20 }}

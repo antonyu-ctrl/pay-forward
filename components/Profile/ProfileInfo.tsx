@@ -16,9 +16,11 @@ interface Props {
         bio: string;
         hasActiveChain?: boolean;
     };
+    activeTab: 'Post' | 'Following' | 'Media';
+    onTabChange: (tab: 'Post' | 'Following' | 'Media') => void;
 }
 
-export default function ProfileInfo({ user }: Props) {
+export default function ProfileInfo({ user, activeTab, onTabChange }: Props) {
     const router = useRouter();
 
     return (
@@ -98,6 +100,24 @@ export default function ProfileInfo({ user }: Props) {
                 <TouchableOpacity className="bg-gray-100 p-2.5 rounded-lg items-center justify-center active:opacity-70">
                     <Feather name="user-plus" size={20} color="black" />
                 </TouchableOpacity>
+            </View>
+
+            {/* Profile Tabs (Twitter Style) */}
+            <View className="flex-row mt-4 pt-1 border-b border-gray-100 pb-0">
+                {(['Post', 'Following', 'Media'] as const).map((tab) => {
+                    const isActive = activeTab === tab;
+                    return (
+                        <TouchableOpacity
+                            key={tab}
+                            className={`flex-1 items-center pb-3 ${isActive ? 'border-b-2 border-sky-500' : ''}`}
+                            onPress={() => onTabChange(tab)}
+                        >
+                            <Text className={`text-sm ${isActive ? 'font-bold text-gray-900' : 'font-medium text-gray-400'}`}>
+                                {tab}
+                            </Text>
+                        </TouchableOpacity>
+                    );
+                })}
             </View>
         </View>
     );
