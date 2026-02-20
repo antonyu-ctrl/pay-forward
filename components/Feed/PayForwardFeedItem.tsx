@@ -34,7 +34,6 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = ({
                 <View className="flex-row items-center justify-between">
                     <View className="flex-row items-center space-x-1 flex-1">
                         <Text className="font-bold text-gray-900 text-[15px]" numberOfLines={1}>{username}</Text>
-                        <MaterialCommunityIcons name="check-decagram" size={14} color="#0EA5E9" style={{ marginLeft: 2 }} />
                         <Text className="text-gray-500 text-[14px] ml-1 flex-shrink" numberOfLines={1}>@{username.toLowerCase()} · {timeAgo}</Text>
                     </View>
                     <TouchableOpacity>
@@ -44,8 +43,8 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = ({
 
                 {/* Forwarded Badge */}
                 <View className="flex-row items-center mt-0.5 mb-1.5 self-start">
-                    <Feather name="corner-down-right" size={12} color="#6B7280" />
-                    <Text className="text-gray-500 text-xs ml-1">
+                    <MaterialCommunityIcons name="hand-heart" size={13} color="#0EA5E9" />
+                    <Text className="text-gray-500 text-xs ml-1.5">
                         Forwarded to <Text className="font-medium text-gray-700">{forwardedTo}</Text>
                     </Text>
                 </View>
@@ -59,11 +58,6 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = ({
                 {mainImageUrl && (
                     <View className="w-full relative rounded-2xl overflow-hidden border border-gray-100 mb-3 bg-gray-100">
                         <Image source={{ uri: mainImageUrl }} className="w-full aspect-[4/3] resize-cover" />
-
-                        {/* Hand Holding Heart Icon Overlay (Optional) */}
-                        <View className="absolute bottom-3 right-3 bg-black/60 w-8 h-8 rounded-full items-center justify-center">
-                            <MaterialCommunityIcons name="hand-heart" size={16} color="white" />
-                        </View>
                     </View>
                 )}
 
