@@ -4,7 +4,7 @@ import React from 'react';
 import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import WebTopBar from '@/components/Navigation/WebTopBar';
+
 
 
 function TabBarIcon(props: {
@@ -22,8 +22,6 @@ export default function TabLayout() {
 
   return (
     <>
-      {/* Web Top Navigation Bar - Only visible on Desktop */}
-      {isDesktop && <WebTopBar />}
 
       <Tabs
         screenOptions={{
@@ -78,6 +76,27 @@ export default function TabLayout() {
           options={{
             href: null, // Hide from tab bar
             title: 'New Chain',
+          }}
+        />
+        <Tabs.Screen
+          name="user/[userId]"
+          options={{
+            href: null,
+            title: 'User Profile',
+          }}
+        />
+        <Tabs.Screen
+          name="user/followers"
+          options={{
+            href: null,
+            title: 'Followers',
+          }}
+        />
+        <Tabs.Screen
+          name="user/following"
+          options={{
+            href: null,
+            title: 'Following',
           }}
         />
       </Tabs>

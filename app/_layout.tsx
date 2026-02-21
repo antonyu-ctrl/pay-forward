@@ -7,7 +7,8 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import '../global.css';
 
-import { useColorScheme } from 'react-native';
+import WebTopBar from '@/components/Navigation/WebTopBar';
+import { useColorScheme, useWindowDimensions } from 'react-native';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -48,9 +49,13 @@ export default function RootLayout() {
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 768;
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      {/* WebTopBar — always visible on desktop, all routes */}
+      {isDesktop && <WebTopBar />}
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 

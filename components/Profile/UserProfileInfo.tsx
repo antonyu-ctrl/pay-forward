@@ -2,11 +2,11 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
-import { MY_USER_ID } from '../../data/mockUsers';
 import AnimatedGradientBorder from '../UI/AnimatedGradientBorder';
 
 interface Props {
     user: {
+        username: string;
         name: string;
         avatar: string;
         stats: {
@@ -17,27 +17,25 @@ interface Props {
         bio: string;
         hasActiveChain?: boolean;
     };
-    activeTab: 'Post' | 'Following' | 'Media';
-    onTabChange: (tab: 'Post' | 'Following' | 'Media') => void;
+    activeTab: string;
+    onTabChange: (tab: any) => void;
+    isFollower: boolean; // whether this user has relationship with me
 }
 
-export default function ProfileInfo({ user, activeTab, onTabChange }: Props) {
+export default function UserProfileInfo({ user, activeTab, onTabChange, isFollower }: Props) {
     const router = useRouter();
+
+    // Determine available tabs based on relationship
+    const tabs = isFollower
+        ? (['Post', 'Following', 'Media'] as const)
+        : (['Post', 'Media'] as const);
 
     return (
         <View className="px-4 py-4 bg-white">
             {/* Top Row: Avatar & Stats */}
             <View className="flex-row items-center justify-between mb-6">
-                {/* Avatar with Status Ring (Blue for Active Chain) */}
-                <TouchableOpacity
-                    onPress={() => {
-                        if (user.hasActiveChain) {
-                            router.push('/(tabs)/my-forward');
-                        }
-                    }}
-                    activeOpacity={0.8}
-                    className="items-center justify-center"
-                >
+                {/* Avatar with Status Ring */}
+                <View className="items-center justify-center">
                     {user.hasActiveChain ? (
                         <AnimatedGradientBorder
                             size={88}
@@ -60,13 +58,12 @@ export default function ProfileInfo({ user, activeTab, onTabChange }: Props) {
                         </View>
                     )}
 
-                    {/* Optional: Add a small indicator icon if needed */}
                     {user.hasActiveChain && (
                         <View className="absolute bottom-1 right-1 bg-sky-500 rounded-full p-1 border-2 border-white">
                             <Feather name="zap" size={12} color="white" />
                         </View>
                     )}
-                </TouchableOpacity>
+                </View>
 
                 {/* Stats */}
                 <View className="flex-1 flex-row justify-around ml-4">
@@ -76,14 +73,14 @@ export default function ProfileInfo({ user, activeTab, onTabChange }: Props) {
                     </View>
                     <TouchableOpacity
                         className="items-center"
-                        onPress={() => router.push({ pathname: '/user/followers', params: { userId: MY_USER_ID } } as any)}
+                        onPress={() => router.push({ pathname: '/user/followers', params: { userId: user.username } } as any)}
                     >
                         <Text className="text-lg font-bold text-gray-900">{user.stats.followers}</Text>
                         <Text className="text-xs text-gray-500">Followers</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         className="items-center"
-                        onPress={() => router.push({ pathname: '/user/following', params: { userId: MY_USER_ID } } as any)}
+                        onPress={() => router.push({ pathname: '/user/following', params: { userId: user.username } } as any)}
                     >
                         <Text className="text-lg font-bold text-gray-900">{user.stats.following}</Text>
                         <Text className="text-xs text-gray-500">Following</Text>
@@ -99,19 +96,20 @@ export default function ProfileInfo({ user, activeTab, onTabChange }: Props) {
                 </Text>
             </View>
 
-            {/* Action Buttons */}
-            <View className="flex-row space-x-2">
+            {/* Action Buttons — Impact + Direct Message, evenly split */}
+            <View className="flex-row gap-2">
                 <TouchableOpacity className="flex-1 bg-sky-500 py-2.5 rounded-lg items-center active:opacity-70">
-                    <Text className="font-bold text-sm text-white">Edit profile</Text>
+                    <Text className="font-bold text-sm text-white">{user.username}'s Impact</Text>
                 </TouchableOpacity>
-                <TouchableOpacity className="bg-gray-100 p-2.5 rounded-lg items-center justify-center active:opacity-70">
-                    <Feather name="user-plus" size={20} color="black" />
+                <TouchableOpacity className="flex-1 flex-row bg-sky-500 py-2.5 rounded-lg items-center justify-center active:opacity-70 gap-1.5">
+                    <Feather name="send" size={16} color="white" />
+                    <Text className="font-bold text-sm text-white">Message</Text>
                 </TouchableOpacity>
             </View>
 
-            {/* Profile Tabs (Twitter Style) */}
+            {/* Profile Tabs — conditionally show Following tab */}
             <View className="flex-row mt-4 pt-1 border-b border-gray-100 pb-0">
-                {(['Post', 'Following', 'Media'] as const).map((tab) => {
+                {tabs.map((tab) => {
                     const isActive = activeTab === tab;
                     return (
                         <TouchableOpacity

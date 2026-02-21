@@ -2,6 +2,7 @@ import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { MY_USER_ID } from '../../data/mockUsers';
 
 export interface FeedItemProps {
     id?: string;
@@ -60,7 +61,18 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = ({
             <View className={`bg-white px-4 flex-row ${isReply ? 'pt-1 pb-3' : 'py-3'} ${((!effectivelyThreadParent && !isReply) || (!effectivelyThreadParent && isReply)) ? 'border-b border-gray-100' : ''}`}>
                 {/* Left Column: Avatar & Optional Thread Line */}
                 <View className="mr-3 items-center relative">
-                    <Image source={{ uri: avatarUrl }} className="w-10 h-10 rounded-full bg-gray-200 z-10" />
+                    <TouchableOpacity
+                        activeOpacity={0.7}
+                        onPress={() => {
+                            if (username === MY_USER_ID) {
+                                router.push('/(tabs)/profile');
+                            } else {
+                                router.push({ pathname: '/user/[userId]', params: { userId: username } } as any);
+                            }
+                        }}
+                    >
+                        <Image source={{ uri: avatarUrl }} className="w-10 h-10 rounded-full bg-gray-200 z-10" />
+                    </TouchableOpacity>
                     {/* Vertical Thread Line */}
                     {effectivelyThreadParent && (
                         <View className="absolute top-10 bottom-[-24px] w-[2px] bg-gray-200 z-0" />
