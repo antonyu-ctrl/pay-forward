@@ -5,7 +5,7 @@ import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import WebTopBar from '@/components/Navigation/WebTopBar';
-import { useColorScheme } from '@/components/useColorScheme';
+
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof Feather>['name'];
@@ -15,7 +15,7 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const isDesktop = width >= 768; // 768px is the standard MD breakpoint

@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function SearchScreen() {
     return (
         <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-            <View className="flex-1 bg-gray-50 items-center" style={Platform.OS === 'web' ? { height: '100vh' } : { flex: 1 }}>
+            <View className="flex-1 bg-gray-50 items-center" style={Platform.OS === 'web' ? { height: '100%' } : { flex: 1 }}>
                 <View className="w-full max-w-md bg-white shadow-sm overflow-hidden flex-1">
                     {/* Header */}
                     <View className="items-center justify-center py-3 border-b border-gray-100 bg-white z-20">

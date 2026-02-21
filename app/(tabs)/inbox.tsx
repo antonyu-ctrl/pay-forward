@@ -1,3 +1,4 @@
+import AnimatedGradientBorder from '@/components/UI/AnimatedGradientBorder';
 import { Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -118,12 +119,25 @@ export default function InboxScreen() {
                     onPress={() => router.push({ pathname: '/chat/[userId]', params: { userId: user.username } })}
                 >
                     <View className="relative">
-                        <View className={`p-[2px] rounded-full ${user.hasActiveChain ? 'border-2 border-sky-400' : 'border border-transparent'}`}>
-                            <Image
-                                source={{ uri: user.avatarUrl }}
-                                className="w-14 h-14 rounded-full border border-gray-100"
-                            />
-                        </View>
+                        {user.hasActiveChain ? (
+                            <AnimatedGradientBorder
+                                size={60}
+                                borderWidth={2.5}
+                                colors={['#0369A1', '#38BDF8', '#E0F2FE', '#38BDF8', '#0369A1']}
+                            >
+                                <Image
+                                    source={{ uri: user.avatarUrl }}
+                                    className="w-[52px] h-[52px] rounded-full border border-gray-100"
+                                />
+                            </AnimatedGradientBorder>
+                        ) : (
+                            <View className="p-[2px] rounded-full border border-transparent">
+                                <Image
+                                    source={{ uri: user.avatarUrl }}
+                                    className="w-14 h-14 rounded-full border border-gray-100"
+                                />
+                            </View>
+                        )}
                         {/* Green Online Dot - Overlapped at bottom right */}
                         <View className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white" />
                     </View>
@@ -195,23 +209,30 @@ export default function InboxScreen() {
                     <View className="mb-8">
                         <Text className="text-gray-900 font-bold text-lg mb-3">History</Text>
                         {historyChains.map((item) => (
-                            <TouchableOpacity key={item.id} className="flex-row items-center py-3 border-b border-gray-50 active:bg-gray-50">
-                                <Image
-                                    source={{ uri: item.avatarUrl }}
-                                    className="w-10 h-10 rounded-full bg-gray-200 mr-3 opacity-80"
-                                />
-                                <View className="flex-1">
-                                    <View className="flex-row justify-between items-center">
-                                        <Text className="text-gray-900 font-medium text-sm mb-0.5">{item.sender}</Text>
-                                        <Text className="text-gray-400 text-xs">{item.time} ago</Text>
+                            <TouchableOpacity key={item.id} className="flex-row items-center px-4 py-3 active:bg-gray-50">
+                                <View className="relative">
+                                    <Image
+                                        source={{ uri: item.avatarUrl }}
+                                        className="w-12 h-12 rounded-full bg-gray-200"
+                                    />
+                                </View>
+
+                                <View className="flex-1 ml-3">
+                                    <View className="flex-row justify-between items-center mb-1">
+                                        <Text className="text-base text-gray-900 font-medium">
+                                            {item.sender}
+                                        </Text>
+                                        <Text className="text-xs text-gray-400">
+                                            {item.time}
+                                        </Text>
                                     </View>
-                                    <Text numberOfLines={1} className="text-gray-500 text-xs">
+                                    <Text numberOfLines={1} className="text-sm text-gray-500">
                                         {item.message}
                                     </Text>
                                 </View>
 
                                 {/* Status Dot */}
-                                <View className={`w-2.5 h-2.5 rounded-full ml-3 ${item.status === 'active' ? 'bg-sky-500' : 'bg-gray-300'
+                                <View className={`w-2.5 h-2.5 rounded-full ml-2 ${item.status === 'active' ? 'bg-sky-500' : 'bg-gray-300'
                                     }`} />
                             </TouchableOpacity>
                         ))}

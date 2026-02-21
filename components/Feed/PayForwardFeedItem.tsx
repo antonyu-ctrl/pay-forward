@@ -1,5 +1,6 @@
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
+import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 
 export interface FeedItemProps {
@@ -15,6 +16,8 @@ export interface FeedItemProps {
     isReply?: boolean; // Adjusts top padding/border
     isReplyTo?: string; // "Replying to @username" text
     replies?: FeedItemProps[]; // Nested replies to expand inline
+    defaultShowReplies?: boolean; // Expands thread immediately on mount
+    showMyRepliesInline?: boolean; // Only show MY replies inline (Profile > Post)
 }
 
 const PayForwardFeedItem: React.FC<FeedItemProps> = ({
@@ -30,10 +33,27 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = ({
     isReply = false,
     isReplyTo,
     replies = [],
+    defaultShowReplies = false,
+    showMyRepliesInline = false,
 }) => {
-    const [showReplies, setShowReplies] = useState(false);
+    const router = useRouter();
+
+    // For inline expansion: only used when showMyRepliesInline is true
+    const showReplies = showMyRepliesInline && defaultShowReplies;
     const hasReplies = replies && replies.length > 0;
     const effectivelyThreadParent = isThreadParent || (showReplies && hasReplies);
+
+    // Navigate to feed detail page (to read replies)
+    const handlePressFeed = () => {
+        if (id && !isReply) {
+            router.push({ pathname: '/feed/[feedId]', params: { feedId: id } });
+        }
+    };
+
+    // Navigate to reply page (to write a reply)
+    const handlePressReply = () => {
+        router.push({ pathname: '/feed/reply', params: { feedId: id ?? '', username } });
+    };
 
     return (
         <>
@@ -77,31 +97,32 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = ({
                         </Text>
                     </View>
 
-                    {/* Text Content */}
-                    <Text className="text-gray-900 text-[15px] leading-5 mb-2.5">
-                        {caption}
-                    </Text>
+                    {/* Tappable Content Area → navigates to feed detail */}
+                    <TouchableOpacity activeOpacity={0.7} onPress={handlePressFeed} disabled={isReply || !id}>
+                        {/* Text Content */}
+                        <Text className="text-gray-900 text-[15px] leading-5 mb-2.5">
+                            {caption}
+                        </Text>
 
-                    {/* Main Visual */}
-                    {mainImageUrl && (
-                        <View className="w-full relative rounded-2xl overflow-hidden border border-gray-100 mb-3 bg-gray-100">
-                            <Image source={{ uri: mainImageUrl }} className="w-full aspect-[4/3] resize-cover" />
-                        </View>
-                    )}
+                        {/* Main Visual */}
+                        {mainImageUrl && (
+                            <View className="w-full relative rounded-2xl overflow-hidden border border-gray-100 mb-3 bg-gray-100">
+                                <Image source={{ uri: mainImageUrl }} className="w-full aspect-[4/3] resize-cover" />
+                            </View>
+                        )}
+                    </TouchableOpacity>
 
                     {/* Action Bar (Twitter Style) */}
                     <View className="flex-row items-center justify-between text-gray-500 mt-1 pr-2">
                         {/* Left Group: Reply, Repost, Like, Bookmark */}
                         <View className="flex-row items-center gap-6">
-                            {/* Reply */}
+                            {/* Reply → goes to reply page */}
                             <TouchableOpacity
                                 className="flex-row items-center"
-                                onPress={() => {
-                                    setShowReplies(!showReplies);
-                                }}
+                                onPress={handlePressReply}
                             >
-                                <Feather name="message-circle" size={18} color={showReplies ? "#0EA5E9" : "#6B7280"} />
-                                <Text className={`text-xs ml-1.5 ${showReplies ? "text-sky-500" : "text-gray-500"}`}>
+                                <Feather name="message-circle" size={18} color="#6B7280" />
+                                <Text className="text-gray-500 text-xs ml-1.5">
                                     {hasReplies ? replies.length : 1}
                                 </Text>
                             </TouchableOpacity>
@@ -132,7 +153,7 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = ({
                 </View>
             </View>
 
-            {/* Inline Expanded Replies */}
+            {/* Inline Expanded Replies (only when showMyRepliesInline is true) */}
             {showReplies && hasReplies && (
                 <View>
                     {replies.map((reply, index) => (

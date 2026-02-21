@@ -55,63 +55,49 @@ const POSTS = [
   'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=500&q=80', // Computer
 ];
 
-// Mock Thread Feed Data
+// Mock Thread Feed Data — IDs 4-6 (synced with feed/[feedId].tsx ALL_FEEDS)
 const THREAD_POSTS = [
   {
-    id: '1',
+    id: '4',
     avatarUrl: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
     username: 'Anton_Yu',
     timeAgo: '2h',
     forwardedTo: 'Sarah Jenkins',
-    caption: 'Just bought coffee for the person behind me in line! Let’s keep the kindness going. ☕️✨',
+    caption: 'Just bought coffee for the person behind me in line! Let\u2019s keep the kindness going. \u2615\ufe0f\u2728',
     likesCount: 15,
   },
   {
-    id: '2',
+    id: '5',
     avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
     username: 'Jane_Doe',
     timeAgo: '4h',
     forwardedTo: 'Local Food Bank',
-    caption: 'Dropped off some canned goods today. Small acts can make a big difference! 🥫',
+    caption: 'Dropped off some canned goods today. Small acts can make a big difference! \ud83e\udd6b',
     mainImageUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=500&q=80',
     likesCount: 34,
     replies: [
       {
-        id: '3',
+        id: '5a',
         avatarUrl: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
         username: 'Anton_Yu',
         timeAgo: '3h',
         forwardedTo: 'Community Center',
-        caption: 'That is so awesome! I’m going to do the same this weekend. Thanks for the inspiration!',
+        caption: 'That is so awesome! I\u2019m going to do the same this weekend. Thanks for the inspiration!',
         likesCount: 5,
       }
     ]
   },
-];
-
-// Mock Following Feed Data
-const FOLLOWING_POSTS = [
   {
-    id: '1',
-    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80',
-    username: 'Emma_W',
-    timeAgo: '1h',
-    forwardedTo: 'Local Animal Shelter',
-    caption: 'Spent the morning walking dogs. They are all so sweet and need homes! 🐶❤️',
-    mainImageUrl: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=500&q=80',
-    likesCount: 112,
-  },
-  {
-    id: '2',
+    id: '6',
     avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
     username: 'David_G',
     timeAgo: '5h',
     forwardedTo: 'City Park Cleanup',
-    caption: 'Team effort! Collected 10 bags of trash from the park today 🌱',
+    caption: 'Team effort! Collected 10 bags of trash from the park today \ud83c\udf31',
     likesCount: 89,
     replies: [
       {
-        id: '2a',
+        id: '6a',
         avatarUrl: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
         username: 'Anton_Yu',
         timeAgo: '4h',
@@ -120,7 +106,7 @@ const FOLLOWING_POSTS = [
         likesCount: 12,
       },
       {
-        id: '2b',
+        id: '6b',
         avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80',
         username: 'Emma_W',
         timeAgo: '2h',
@@ -129,6 +115,21 @@ const FOLLOWING_POSTS = [
         likesCount: 5,
       }
     ]
+  },
+];
+
+// Mock Following Feed Data — ID 7 (synced with feed/[feedId].tsx ALL_FEEDS)
+const FOLLOWING_POSTS = [
+  {
+    id: '7',
+    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80',
+    username: 'Emma_W',
+    timeAgo: '1h',
+    forwardedTo: 'Local Animal Shelter',
+    caption: 'Spent the morning walking dogs. They are all so sweet and need homes! \ud83d\udc36\u2764\ufe0f',
+    mainImageUrl: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=500&q=80',
+    likesCount: 112,
+    replies: [],
   },
 ];
 
@@ -174,6 +175,8 @@ export default function ProfileScreen() {
                     caption={post.caption}
                     likesCount={post.likesCount}
                     replies={post.replies}
+                    defaultShowReplies={true}
+                    showMyRepliesInline={true}
                   />
                 ))}
               </View>
