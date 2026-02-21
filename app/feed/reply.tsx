@@ -1,11 +1,12 @@
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
     Dimensions,
     Image,
     KeyboardAvoidingView,
+    PanResponder,
     Platform,
     ScrollView,
     Text,
@@ -64,6 +65,42 @@ export default function ReplyScreen() {
     const [editorTab, setEditorTab] = useState<EditorTab>('FILTERS');
     const [tempFilter, setTempFilter] = useState<ImageFilterState>(DEFAULT_FILTER);
 
+    // ── Zoom / Pan state for editor ──
+    const [zoomScale, setZoomScale] = useState(1);
+    const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+    const panRef = useRef({ x: 0, y: 0 });       // live value for PanResponder closure
+    const panStart = useRef({ x: 0, y: 0 });
+
+    const editorPanResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dx) > 2 || Math.abs(gs.dy) > 2,
+            onPanResponderGrant: () => {
+                panStart.current = { ...panRef.current };
+            },
+            onPanResponderMove: (_, gs) => {
+                const next = {
+                    x: panStart.current.x + gs.dx,
+                    y: panStart.current.y + gs.dy,
+                };
+                panRef.current = next;
+                setPanOffset(next);
+            },
+        })
+    ).current;
+
+    const handleZoomWheel = useCallback((e: any) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        setZoomScale(prev => Math.min(Math.max(prev + delta, 0.5), 4));
+    }, []);
+
+    const resetZoom = () => {
+        setZoomScale(1);
+        setPanOffset({ x: 0, y: 0 });
+        panRef.current = { x: 0, y: 0 };
+    };
+
     const handlePost = () => {
         // TODO [PRODUCTION]: Apply imageFilters[i] to each image via ImageManipulator
         // before uploading. For now, filters are visual-only (CSS).
@@ -104,6 +141,10 @@ export default function ReplyScreen() {
         const existing = imageFilters[index] ?? DEFAULT_FILTER;
         setTempFilter({ ...existing });
         setEditorTab('FILTERS');
+        // Reset zoom/pan when entering editor
+        setZoomScale(1);
+        setPanOffset({ x: 0, y: 0 });
+        panRef.current = { x: 0, y: 0 };
         setMode('EDITOR');
     };
 
@@ -163,54 +204,105 @@ export default function ReplyScreen() {
 
         return (
             <View
-                className="flex-1 bg-black items-center"
+                className="flex-1 bg-gray-50 items-center"
                 style={Platform.OS === 'web' ? { height: '100vh' as any } : { flex: 1 }}
             >
-                <View className="w-full max-w-md flex-1 bg-black overflow-hidden">
+                <View className="w-full max-w-md flex-1 bg-white shadow-sm overflow-hidden">
                     <Stack.Screen options={{ headerShown: false }} />
 
-                    {/* Editor Header */}
-                    <View className="flex-row items-center justify-between px-4 py-3 bg-black border-b border-gray-800">
-                        <TouchableOpacity onPress={() => setMode('REPLY')}>
-                            <Feather name="chevron-left" size={24} color="white" />
+                    {/* Editor Header — Light theme */}
+                    <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-100">
+                        <TouchableOpacity onPress={() => setMode('REPLY')} className="flex-row items-center">
+                            <Feather name="chevron-left" size={22} color="#111827" />
+                            <Text className="text-gray-900 text-sm ml-1">Back</Text>
                         </TouchableOpacity>
-                        <Text className="text-white text-base font-bold">Edit</Text>
-                        <TouchableOpacity onPress={handleEditorDone}>
-                            <Text className="text-sky-500 font-bold text-base">Done</Text>
+                        <Text className="text-gray-900 text-base font-bold">Edit Photo</Text>
+                        <TouchableOpacity onPress={handleEditorDone} className="bg-sky-500 px-4 py-1.5 rounded-full">
+                            <Text className="text-white font-bold text-sm">Done</Text>
                         </TouchableOpacity>
                     </View>
 
-                    {/* Image Preview */}
-                    <View className="flex-1 justify-center items-center relative">
-                        <Image
-                            source={{ uri: editingImage }}
-                            style={[
-                                { width: contentWidth, height: contentWidth },
-                                editorFilterStyle as any,
-                            ]}
-                            resizeMode="cover"
-                        />
+                    {/* Image Preview — Zoomable / Pannable */}
+                    <View
+                        className="flex-1 justify-center items-center bg-gray-50"
+                        // @ts-ignore — web-only wheel event
+                        onWheel={Platform.OS === 'web' ? handleZoomWheel : undefined}
+                    >
                         <View
-                            className={`absolute pointer-events-none ${getOverlayClass(tempFilter.filter)}`}
-                            style={{ width: contentWidth, height: contentWidth }}
-                        />
+                            className="relative rounded-2xl overflow-hidden shadow-sm bg-white"
+                            style={{ width: contentWidth - 32, height: (contentWidth - 32) * 0.85 }}
+                        >
+                            <View
+                                {...editorPanResponder.panHandlers}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    overflow: 'hidden',
+                                }}
+                            >
+                                <Image
+                                    source={{ uri: editingImage }}
+                                    style={[
+                                        {
+                                            width: (contentWidth - 32) * zoomScale,
+                                            height: (contentWidth - 32) * 0.85 * zoomScale,
+                                            transform: [
+                                                { translateX: panOffset.x },
+                                                { translateY: panOffset.y },
+                                            ],
+                                        },
+                                        editorFilterStyle as any,
+                                    ]}
+                                    resizeMode="contain"
+                                />
+                                <View
+                                    className={`absolute inset-0 pointer-events-none ${getOverlayClass(tempFilter.filter)}`}
+                                />
+                            </View>
+                        </View>
+
+                        {/* Zoom Controls */}
+                        <View className="flex-row items-center mt-3" style={{ gap: 12 }}>
+                            <TouchableOpacity
+                                onPress={() => setZoomScale(prev => Math.max(prev - 0.25, 0.5))}
+                                className="w-8 h-8 rounded-full bg-white border border-gray-200 items-center justify-center shadow-sm"
+                            >
+                                <Feather name="minus" size={16} color="#374151" />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={resetZoom}>
+                                <Text className="text-gray-500 text-xs font-bold min-w-[40px] text-center">
+                                    {Math.round(zoomScale * 100)}%
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setZoomScale(prev => Math.min(prev + 0.25, 4))}
+                                className="w-8 h-8 rounded-full bg-white border border-gray-200 items-center justify-center shadow-sm"
+                            >
+                                <Feather name="plus" size={16} color="#374151" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
 
-                    {/* Editor Controls */}
-                    <View className="bg-gray-900 pb-10 pt-4 rounded-t-3xl border-t border-gray-800">
-                        <View className="flex-row justify-center mb-6 border-b border-gray-800 pb-2">
-                            <TouchableOpacity
-                                onPress={() => setEditorTab('FILTERS')}
-                                className={`px-6 py-2 mx-1 rounded-full ${editorTab === 'FILTERS' ? 'bg-gray-800' : 'bg-transparent'}`}
-                            >
-                                <Text className={`text-xs font-bold ${editorTab === 'FILTERS' ? 'text-white' : 'text-gray-500'}`}>FILTERS</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => setEditorTab('ADJUST')}
-                                className={`px-6 py-2 mx-1 rounded-full ${editorTab === 'ADJUST' ? 'bg-gray-800' : 'bg-transparent'}`}
-                            >
-                                <Text className={`text-xs font-bold ${editorTab === 'ADJUST' ? 'text-white' : 'text-gray-500'}`}>ADJUST</Text>
-                            </TouchableOpacity>
+                    {/* Editor Controls — Light theme */}
+                    <View className="bg-white pb-8 pt-4 rounded-t-3xl border-t border-gray-100">
+                        {/* Tab Switcher */}
+                        <View className="flex-row justify-center mb-5 mx-6">
+                            <View className="flex-row bg-gray-100 rounded-full p-1">
+                                <TouchableOpacity
+                                    onPress={() => setEditorTab('FILTERS')}
+                                    className={`px-6 py-2 rounded-full ${editorTab === 'FILTERS' ? 'bg-white shadow-sm' : 'bg-transparent'}`}
+                                >
+                                    <Text className={`text-xs font-bold ${editorTab === 'FILTERS' ? 'text-gray-900' : 'text-gray-400'}`}>FILTERS</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => setEditorTab('ADJUST')}
+                                    className={`px-6 py-2 rounded-full ${editorTab === 'ADJUST' ? 'bg-white shadow-sm' : 'bg-transparent'}`}
+                                >
+                                    <Text className={`text-xs font-bold ${editorTab === 'ADJUST' ? 'text-gray-900' : 'text-gray-400'}`}>ADJUST</Text>
+                                </TouchableOpacity>
+                            </View>
                         </View>
 
                         {editorTab === 'FILTERS' ? (
@@ -229,10 +321,10 @@ export default function ReplyScreen() {
                                             onPress={() => applyFilterPreset(filter)}
                                             className="items-center"
                                         >
-                                            <View className={`w-16 h-16 rounded-full items-center justify-center mb-2 border-2 ${isSelected ? 'border-sky-500 bg-gray-800' : 'border-gray-700 bg-gray-800'}`}>
-                                                <Feather name={iconName as any} size={24} color={isSelected ? '#0EA5E9' : '#9CA3AF'} />
+                                            <View className={`w-16 h-16 rounded-2xl items-center justify-center mb-2 border-2 ${isSelected ? 'border-sky-500 bg-sky-50' : 'border-gray-200 bg-gray-50'}`}>
+                                                <Feather name={iconName as any} size={22} color={isSelected ? '#0EA5E9' : '#6B7280'} />
                                             </View>
-                                            <Text className={`text-xs ${isSelected ? 'text-sky-500 font-bold' : 'text-gray-400'}`}>
+                                            <Text className={`text-xs ${isSelected ? 'text-sky-600 font-bold' : 'text-gray-500'}`}>
                                                 {filter}
                                             </Text>
                                         </TouchableOpacity>

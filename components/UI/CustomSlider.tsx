@@ -48,7 +48,7 @@ export default function CustomSlider({ value, min, max, onChange, label, icon }:
             <View className="flex-row items-center justify-between mb-2">
                 <View className="flex-row items-center">
                     <Feather name={icon} size={16} color="#9CA3AF" />
-                    <Text className="text-gray-400 text-xs font-bold ml-2 uppercase">{label}</Text>
+                    <Text className="text-gray-500 text-xs font-bold ml-2 uppercase">{label}</Text>
                 </View>
                 <Text className="text-sky-500 text-xs font-bold">{value.toFixed(1)}</Text>
             </View>
@@ -59,7 +59,7 @@ export default function CustomSlider({ value, min, max, onChange, label, icon }:
             >
                 {/* Track Background */}
                 <View
-                    className="h-2 bg-gray-800 rounded-full w-full absolute"
+                    className="h-2 bg-gray-200 rounded-full w-full absolute"
                     onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
                 />
 
