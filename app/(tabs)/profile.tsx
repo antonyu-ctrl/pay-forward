@@ -138,7 +138,7 @@ export default function ProfileScreen() {
 
   return (
     <View
-      className="flex-1 bg-white items-center"
+      className="flex-1 bg-gray-50 items-center"
       style={Platform.OS === 'web' ? ({ height: '100vh' } as any) : { flex: 1 }}
     >
       <View className="w-full max-w-md flex-1 bg-white shadow-sm overflow-hidden flex flex-col">

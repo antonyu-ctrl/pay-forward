@@ -1,6 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
     Dimensions,
@@ -8,13 +8,13 @@ import {
     Image,
     KeyboardAvoidingView,
     Platform,
-    SafeAreaView,
     ScrollView,
     Text,
     TextInput,
     TouchableOpacity,
     View
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import SafeGradient from '../../components/SafeGradient';
 import CustomSlider from '../../components/UI/CustomSlider';
 
@@ -316,35 +316,41 @@ export default function CreateFeedScreen() {
     );
 
     return (
-        <View className="flex-1 bg-white">
-            <SafeAreaView className="flex-1 bg-white">
-                {/* Header */}
-                <View className={`flex-row items-center justify-between px-4 py-3 border-b ${step === 'EDITOR' ? 'bg-black border-gray-800' : 'bg-white border-gray-100'}`}>
-                    <TouchableOpacity onPress={handleBack} className="p-2 -ml-2">
-                        <Feather name="chevron-left" size={26} color={step === 'EDITOR' ? 'white' : '#1F2937'} />
-                    </TouchableOpacity>
+        <View
+            className="flex-1 bg-gray-50 items-center"
+            style={Platform.OS === 'web' ? ({ height: '100%' } as any) : { flex: 1 }}
+        >
+            <View className="w-full max-w-md flex-1 bg-white shadow-sm overflow-hidden flex flex-col">
+                <SafeAreaView className="flex-1 bg-white" edges={['top']}>
+                    <Stack.Screen options={{ headerShown: false }} />
+                    {/* Header */}
+                    <View className={`flex-row items-center justify-between px-4 py-3 border-b ${step === 'EDITOR' ? 'bg-black border-gray-800' : 'bg-white border-gray-100'}`}>
+                        <TouchableOpacity onPress={handleBack} className="p-2 -ml-2">
+                            <Feather name="chevron-left" size={26} color={step === 'EDITOR' ? 'white' : '#1F2937'} />
+                        </TouchableOpacity>
 
-                    <Text className={`text-base font-bold ${step === 'EDITOR' ? 'text-white' : 'text-gray-900'}`}>
-                        {step === 'PICKER' ? 'New Post' : step === 'EDITOR' ? 'Edit' : 'New Post'}
-                    </Text>
-
-                    <TouchableOpacity
-                        onPress={handleNext}
-                        disabled={step === 'PICKER' && images.length === 0}
-                        className="p-2 -mr-2"
-                    >
-                        <Text className={`font-bold text-base ${(step === 'PICKER' && images.length === 0) ? 'text-gray-300' : 'text-sky-500'
-                            }`}>
-                            {step === 'POST' ? 'Share' : 'Next'}
+                        <Text className={`text-base font-bold ${step === 'EDITOR' ? 'text-white' : 'text-gray-900'}`}>
+                            {step === 'PICKER' ? 'New Post' : step === 'EDITOR' ? 'Edit' : 'New Post'}
                         </Text>
-                    </TouchableOpacity>
-                </View>
 
-                {step === 'PICKER' && renderPicker()}
-                {step === 'EDITOR' && renderEditor()}
-                {step === 'POST' && renderPost()}
+                        <TouchableOpacity
+                            onPress={handleNext}
+                            disabled={step === 'PICKER' && images.length === 0}
+                            className="p-2 -mr-2"
+                        >
+                            <Text className={`font-bold text-base ${(step === 'PICKER' && images.length === 0) ? 'text-gray-300' : 'text-sky-500'
+                                }`}>
+                                {step === 'POST' ? 'Share' : 'Next'}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
 
-            </SafeAreaView>
+                    {step === 'PICKER' && renderPicker()}
+                    {step === 'EDITOR' && renderEditor()}
+                    {step === 'POST' && renderPost()}
+
+                </SafeAreaView>
+            </View>
         </View>
     );
 }
