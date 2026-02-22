@@ -13,12 +13,22 @@ import {
 
 export default function FollowersScreen() {
     const router = useRouter();
-    const { userId } = useLocalSearchParams<{ userId: string }>();
+    const { userId, returnTo } = useLocalSearchParams<{ userId: string; returnTo?: string }>();
     const [searchQuery, setSearchQuery] = useState('');
 
     const isMyProfile = !userId || userId === MY_USER_ID;
     const followers = isMyProfile ? getUsersByIds(MY_FOLLOWERS) : [];
     const title = isMyProfile ? 'Followers' : `${userId}'s Followers`;
+
+    const handleGoBack = () => {
+        if (returnTo) {
+            router.replace(returnTo as any);
+        } else if (router.canGoBack()) {
+            router.back();
+        } else {
+            router.replace('/(tabs)/profile');
+        }
+    };
 
     const filteredFollowers = useMemo(() => {
         if (!searchQuery.trim()) return followers;
@@ -39,7 +49,7 @@ export default function FollowersScreen() {
                 <SafeAreaView className="flex-1 bg-white" edges={['top']}>
                     {/* Header */}
                     <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-100">
-                        <TouchableOpacity onPress={() => router.back()} className="w-8">
+                        <TouchableOpacity onPress={handleGoBack} className="w-8">
                             <Feather name="arrow-left" size={24} color="black" />
                         </TouchableOpacity>
                         <Text className="text-lg font-bold text-gray-900">{title}</Text>
@@ -78,7 +88,7 @@ export default function FollowersScreen() {
                                     if (follower.id === MY_USER_ID) {
                                         router.push('/(tabs)/profile');
                                     } else {
-                                        router.push({ pathname: '/user/[userId]', params: { userId: follower.id } } as any);
+                                        router.push({ pathname: '/user/[userId]', params: { userId: follower.id, returnTo: `/user/followers?userId=${userId ?? MY_USER_ID}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}` } } as any);
                                     }
                                 }}
                             />
@@ -121,11 +131,11 @@ function FollowerItem({ user, iFollowThem, onPress }: FollowerItemProps) {
                 <Text className="text-gray-500 text-sm">@{user.username}</Text>
             </View>
             {iFollowThem ? (
-                <View className="bg-gray-100 px-4 py-2 rounded-full">
+                <View className="bg-gray-100 px-4 py-2 rounded-full min-w-[100px] items-center">
                     <Text className="text-sm font-semibold text-gray-700">Following</Text>
                 </View>
             ) : (
-                <TouchableOpacity className="bg-sky-500 px-4 py-2 rounded-full">
+                <TouchableOpacity className="bg-sky-500 px-4 py-2 rounded-full min-w-[100px] items-center">
                     <Text className="text-sm font-bold text-white">Follow</Text>
                 </TouchableOpacity>
             )}

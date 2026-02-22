@@ -13,12 +13,22 @@ import {
 
 export default function FollowingScreen() {
     const router = useRouter();
-    const { userId } = useLocalSearchParams<{ userId: string }>();
+    const { userId, returnTo } = useLocalSearchParams<{ userId: string; returnTo?: string }>();
     const [searchQuery, setSearchQuery] = useState('');
 
     const isMyProfile = !userId || userId === MY_USER_ID;
     const following = isMyProfile ? getUsersByIds(MY_FOLLOWING) : [];
     const title = isMyProfile ? 'Following' : `${userId}'s Following`;
+
+    const handleGoBack = () => {
+        if (returnTo) {
+            router.replace(returnTo as any);
+        } else if (router.canGoBack()) {
+            router.back();
+        } else {
+            router.replace('/(tabs)/profile');
+        }
+    };
 
     const filteredFollowing = useMemo(() => {
         if (!searchQuery.trim()) return following;
@@ -39,7 +49,7 @@ export default function FollowingScreen() {
                 <SafeAreaView className="flex-1 bg-white" edges={['top']}>
                     {/* Header */}
                     <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-100">
-                        <TouchableOpacity onPress={() => router.back()} className="w-8">
+                        <TouchableOpacity onPress={handleGoBack} className="w-8">
                             <Feather name="arrow-left" size={24} color="black" />
                         </TouchableOpacity>
                         <Text className="text-lg font-bold text-gray-900">{title}</Text>
@@ -78,7 +88,7 @@ export default function FollowingScreen() {
                                     if (user.id === MY_USER_ID) {
                                         router.push('/(tabs)/profile');
                                     } else {
-                                        router.push({ pathname: '/user/[userId]', params: { userId: user.id } } as any);
+                                        router.push({ pathname: '/user/[userId]', params: { userId: user.id, returnTo: `/user/following?userId=${userId ?? MY_USER_ID}${returnTo ? `&returnTo=${encodeURIComponent(returnTo)}` : ''}` } } as any);
                                     }
                                 }}
                             />

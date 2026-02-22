@@ -76,14 +76,14 @@ export default function ProfileInfo({ user, activeTab, onTabChange }: Props) {
                     </View>
                     <TouchableOpacity
                         className="items-center"
-                        onPress={() => router.push({ pathname: '/user/followers', params: { userId: MY_USER_ID } } as any)}
+                        onPress={() => router.push({ pathname: '/user/followers', params: { userId: MY_USER_ID, returnTo: '/(tabs)/profile' } } as any)}
                     >
                         <Text className="text-lg font-bold text-gray-900">{user.stats.followers}</Text>
                         <Text className="text-xs text-gray-500">Followers</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         className="items-center"
-                        onPress={() => router.push({ pathname: '/user/following', params: { userId: MY_USER_ID } } as any)}
+                        onPress={() => router.push({ pathname: '/user/following', params: { userId: MY_USER_ID, returnTo: '/(tabs)/profile' } } as any)}
                     >
                         <Text className="text-lg font-bold text-gray-900">{user.stats.following}</Text>
                         <Text className="text-xs text-gray-500">Following</Text>

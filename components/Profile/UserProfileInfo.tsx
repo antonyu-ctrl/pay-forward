@@ -73,14 +73,14 @@ export default function UserProfileInfo({ user, activeTab, onTabChange, isFollow
                     </View>
                     <TouchableOpacity
                         className="items-center"
-                        onPress={() => router.push({ pathname: '/user/followers', params: { userId: user.username } } as any)}
+                        onPress={() => router.push({ pathname: '/user/followers', params: { userId: user.username, returnTo: `/user/${user.username}` } } as any)}
                     >
                         <Text className="text-lg font-bold text-gray-900">{user.stats.followers}</Text>
                         <Text className="text-xs text-gray-500">Followers</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         className="items-center"
-                        onPress={() => router.push({ pathname: '/user/following', params: { userId: user.username } } as any)}
+                        onPress={() => router.push({ pathname: '/user/following', params: { userId: user.username, returnTo: `/user/${user.username}` } } as any)}
                     >
                         <Text className="text-lg font-bold text-gray-900">{user.stats.following}</Text>
                         <Text className="text-xs text-gray-500">Following</Text>
@@ -98,10 +98,16 @@ export default function UserProfileInfo({ user, activeTab, onTabChange, isFollow
 
             {/* Action Buttons — Impact + Direct Message, evenly split */}
             <View className="flex-row gap-2">
-                <TouchableOpacity className="flex-1 bg-sky-500 py-2.5 rounded-lg items-center active:opacity-70">
+                <TouchableOpacity
+                    className="flex-1 bg-sky-500 py-2.5 rounded-lg items-center active:opacity-70"
+                    onPress={() => router.push({ pathname: '/user/user-impact', params: { userId: user.username, returnTo: `/user/${user.username}` } } as any)}
+                >
                     <Text className="font-bold text-sm text-white">{user.username}'s Impact</Text>
                 </TouchableOpacity>
-                <TouchableOpacity className="flex-1 flex-row bg-sky-500 py-2.5 rounded-lg items-center justify-center active:opacity-70 gap-1.5">
+                <TouchableOpacity
+                    className="flex-1 flex-row bg-sky-500 py-2.5 rounded-lg items-center justify-center active:opacity-70 gap-1.5"
+                    onPress={() => router.push({ pathname: '/chat/[userId]', params: { userId: user.username } } as any)}
+                >
                     <Feather name="send" size={16} color="white" />
                     <Text className="font-bold text-sm text-white">Message</Text>
                 </TouchableOpacity>

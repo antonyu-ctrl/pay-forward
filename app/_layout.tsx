@@ -62,6 +62,7 @@ function RootLayoutNav() {
         <Stack.Screen name="feed/create" options={{ presentation: 'fullScreenModal', headerShown: false }} />
         <Stack.Screen name="feed/[feedId]" options={{ headerShown: false }} />
         <Stack.Screen name="feed/reply" options={{ presentation: 'modal', headerShown: false }} />
+        <Stack.Screen name="chat/[userId]" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

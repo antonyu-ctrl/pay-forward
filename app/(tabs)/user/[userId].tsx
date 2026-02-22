@@ -141,6 +141,7 @@ export default function UserProfileScreen() {
     }
 
     const posts = USER_POSTS[userId ?? ''] ?? [];
+    const { returnTo } = useLocalSearchParams<{ returnTo?: string }>();
     const media = USER_MEDIA[userId ?? ''] ?? [
         'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=500&q=80',
         'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=500&q=80',
@@ -157,7 +158,7 @@ export default function UserProfileScreen() {
                 <SafeAreaView className="flex-1 bg-white" edges={['top']}>
                     {/* Sticky Header */}
                     <View className="z-10 bg-white">
-                        <UserProfileHeader username={user.username} />
+                        <UserProfileHeader username={user.username} returnTo={returnTo} />
                     </View>
 
                     {/* Scrollable Content */}

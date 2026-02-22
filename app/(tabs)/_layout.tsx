@@ -99,6 +99,13 @@ export default function TabLayout() {
             title: 'Following',
           }}
         />
+        <Tabs.Screen
+          name="user/user-impact"
+          options={{
+            href: null,
+            title: 'User Impact',
+          }}
+        />
       </Tabs>
     </>
   );
