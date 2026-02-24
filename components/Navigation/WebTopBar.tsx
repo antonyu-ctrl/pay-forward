@@ -2,10 +2,12 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { usePathname, useRouter } from 'expo-router';
 import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
+import { useI18n } from '../../lib/i18n';
 
 export default function WebTopBar() {
     const router = useRouter();
     const pathname = usePathname();
+    const { t } = useI18n();
 
     const isActive = (path: string) => pathname === path;
 
@@ -18,7 +20,7 @@ export default function WebTopBar() {
                         <View className="w-8 h-8 bg-sky-500 rounded-lg items-center justify-center mr-2">
                             <Ionicons name="heart" size={18} color="white" />
                         </View>
-                        <Text className="text-xl font-bold text-gray-900 tracking-tight">PayForward</Text>
+                        <Text className="text-xl font-bold text-gray-900 tracking-tight">{t('app.name')}</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -26,27 +28,27 @@ export default function WebTopBar() {
                 <View className="flex-row items-center justify-center space-x-8 gap-8">
                     <TouchableOpacity onPress={() => router.push('/')} className="flex-row items-center">
                         <Feather name="home" size={20} color={isActive('/') ? '#0EA5E9' : '#4B5563'} />
-                        <Text className={`ml-2 font-medium ${isActive('/') ? 'text-sky-500' : 'text-gray-600'}`}>Home</Text>
+                        <Text className={`ml-2 font-medium ${isActive('/') ? 'text-sky-500' : 'text-gray-600'}`}>{t('nav.home')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.push('/my-forward')} className="flex-row items-center">
                         <Feather name="layers" size={20} color={isActive('/my-forward') ? '#0EA5E9' : '#4B5563'} />
-                        <Text className={`ml-2 font-medium ${isActive('/my-forward') ? 'text-sky-500' : 'text-gray-600'}`}>My Forward</Text>
+                        <Text className={`ml-2 font-medium ${isActive('/my-forward') ? 'text-sky-500' : 'text-gray-600'}`}>{t('nav.myForward')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.push('/inbox')} className="flex-row items-center">
                         <Feather name="send" size={20} color={isActive('/inbox') ? '#0EA5E9' : '#4B5563'} />
-                        <Text className={`ml-2 font-medium ${isActive('/inbox') ? 'text-sky-500' : 'text-gray-600'}`}>Inbox</Text>
+                        <Text className={`ml-2 font-medium ${isActive('/inbox') ? 'text-sky-500' : 'text-gray-600'}`}>{t('nav.inbox')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.push('/search')} className="flex-row items-center">
                         <Feather name="search" size={20} color={isActive('/search') ? '#0EA5E9' : '#4B5563'} />
-                        <Text className={`ml-2 font-medium ${isActive('/search') ? 'text-sky-500' : 'text-gray-600'}`}>Search</Text>
+                        <Text className={`ml-2 font-medium ${isActive('/search') ? 'text-sky-500' : 'text-gray-600'}`}>{t('nav.search')}</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={() => router.push('/profile')} className="flex-row items-center">
                         <Feather name="user" size={20} color={isActive('/profile') ? '#0EA5E9' : '#4B5563'} />
-                        <Text className={`ml-2 font-medium ${isActive('/profile') ? 'text-sky-500' : 'text-gray-600'}`}>Profile</Text>
+                        <Text className={`ml-2 font-medium ${isActive('/profile') ? 'text-sky-500' : 'text-gray-600'}`}>{t('nav.profile')}</Text>
                     </TouchableOpacity>
                 </View>
 

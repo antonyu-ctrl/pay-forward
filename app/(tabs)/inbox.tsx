@@ -3,6 +3,7 @@ import { Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useI18n } from '../../lib/i18n';
 
 // Mock Data for Online Users
 const ONLINE_USERS = [
@@ -108,6 +109,7 @@ type TabType = 'chain' | 'direct';
 
 export default function InboxScreen() {
     const router = useRouter();
+    const { t } = useI18n();
     const [activeTab, setActiveTab] = useState<TabType>('chain'); // Default to chain for review
 
     const renderOnlineUsers = () => (
@@ -191,10 +193,10 @@ export default function InboxScreen() {
                                         <View className="flex-row items-center justify-between bg-gray-50 rounded-lg p-2">
                                             <View className="flex-row items-center">
                                                 <View className="bg-sky-100 rounded px-2 py-0.5 mr-2">
-                                                    <Text className="text-sky-600 text-xs font-bold">{item.hoursLeft}h left</Text>
+                                                    <Text className="text-sky-600 text-xs font-bold">{item.hoursLeft}{t('inbox.hoursLeft')}</Text>
                                                 </View>
                                                 <Text className="text-gray-500 text-xs">
-                                                    {item.participants} joined • {item.completed} completed
+                                                    {item.participants} {t('inbox.joined')} • {item.completed} {t('inbox.completed')}
                                                 </Text>
                                             </View>
                                         </View>
@@ -257,7 +259,7 @@ export default function InboxScreen() {
                     {/* Header - Matches 'My Impact' style for consistency */}
                     <View className="items-center justify-center py-3 border-b border-gray-100 bg-white z-10 relative">
                         {/* Centered Title */}
-                        <Text className="text-lg font-bold text-gray-900 tracking-tight">Inbox</Text>
+                        <Text className="text-lg font-bold text-gray-900 tracking-tight">{t('nav.inbox')}</Text>
                     </View>
 
                     {/* Tabs */}
@@ -271,7 +273,7 @@ export default function InboxScreen() {
                                 className={`font-medium ${activeTab === 'chain' ? 'text-sky-500 font-bold' : 'text-gray-500'
                                     }`}
                             >
-                                Chain Message
+                                {t('inbox.tab.chain')}
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
@@ -283,7 +285,7 @@ export default function InboxScreen() {
                                 className={`font-medium ${activeTab === 'direct' ? 'text-sky-500 font-bold' : 'text-gray-500'
                                     }`}
                             >
-                                Direct Message
+                                {t('inbox.tab.direct')}
                             </Text>
                         </TouchableOpacity>
                     </View>

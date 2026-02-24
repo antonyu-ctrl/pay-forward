@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 import '../global.css';
 
 import WebTopBar from '@/components/Navigation/WebTopBar';
+import { I18nProvider } from '@/lib/i18n';
 import { useColorScheme, useWindowDimensions } from 'react-native';
 
 export {
@@ -53,19 +54,21 @@ function RootLayoutNav() {
   const isDesktop = width >= 768;
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      {/* WebTopBar — always visible on desktop, all routes */}
-      {isDesktop && <WebTopBar />}
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    <I18nProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        {/* WebTopBar — always visible on desktop, all routes */}
+        {isDesktop && <WebTopBar />}
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-        <Stack.Screen name="feed/create" options={{ presentation: 'fullScreenModal', headerShown: false }} />
-        <Stack.Screen name="feed/[feedId]" options={{ headerShown: false }} />
-        <Stack.Screen name="feed/reply" options={{ presentation: 'modal', headerShown: false }} />
-        <Stack.Screen name="chat/[userId]" options={{ headerShown: false }} />
-        <Stack.Screen name="chain/[userId]" options={{ headerShown: false }} />
-      </Stack>
+          <Stack.Screen name="feed/create" options={{ presentation: 'fullScreenModal', headerShown: false }} />
+          <Stack.Screen name="feed/[feedId]" options={{ headerShown: false }} />
+          <Stack.Screen name="feed/reply" options={{ presentation: 'modal', headerShown: false }} />
+          <Stack.Screen name="chat/[userId]" options={{ headerShown: false }} />
+          <Stack.Screen name="chain/[userId]" options={{ headerShown: false }} />
+        </Stack>
 
-    </ThemeProvider>
+      </ThemeProvider>
+    </I18nProvider>
   );
 }

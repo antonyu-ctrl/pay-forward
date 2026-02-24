@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Image, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import SafeGradient from '../../../components/SafeGradient';
+import { useI18n } from '../../../lib/i18n';
 
 // Mock Data Structure (same as my-forward.tsx)
 type ChainType = 'ignited' | 'invited';
@@ -94,6 +95,7 @@ type FilterOption = 'All' | 'Active' | 'Completed' | 'Archived';
 
 export default function UserImpactScreen() {
     const router = useRouter();
+    const { t } = useI18n();
     const { userId, returnTo } = useLocalSearchParams<{ userId: string; returnTo?: string }>();
     const chains = USER_CHAINS[userId ?? ''] ?? DEFAULT_CHAINS;
 
@@ -110,6 +112,12 @@ export default function UserImpactScreen() {
     const [activeTab, setActiveTab] = useState<ChainType>('ignited');
     const [filter, setFilter] = useState<FilterOption>('All');
     const [filterModalVisible, setFilterModalVisible] = useState(false);
+    const filterLabel = (option: FilterOption) => {
+        if (option === 'All') return t('myForward.filter.all');
+        if (option === 'Active') return t('myForward.filter.active');
+        if (option === 'Completed') return t('myForward.filter.completed');
+        return t('myForward.filter.archived');
+    };
 
     // Aggregate Stats (only count 'ignited' chains)
     const ignitedChains = chains.filter(c => c.type === 'ignited');
@@ -163,16 +171,16 @@ export default function UserImpactScreen() {
             {/* Progress / Stats Row */}
             <View className="flex-row items-center justify-between mt-2 bg-gray-50 p-3 rounded-xl border border-gray-100">
                 <View className="items-center flex-1 border-r border-gray-200">
-                    <Text className="text-xs text-gray-400 font-medium">LIVES TOUCHED</Text>
+                    <Text className="text-xs text-gray-400 font-medium">{t('myForward.livesTouched')}</Text>
                     <Text className="text-lg font-bold text-gray-900">{item.stats.impact}</Text>
                 </View>
                 <View className="items-center flex-1">
-                    <Text className="text-xs text-gray-400 font-medium">NEXT GOAL</Text>
+                    <Text className="text-xs text-gray-400 font-medium">{t('myForward.nextGoal')}</Text>
                     {item.status === 'Completed' ? (
-                        <Text className="text-lg font-bold text-sky-500">Completed</Text>
+                        <Text className="text-lg font-bold text-sky-500">{t('common.completed')}</Text>
                     ) : (
                         <Text className="text-lg font-bold text-sky-500">
-                            {Math.pow(2, item.stats.generation) * 2} <Text className="text-xs text-gray-400 font-normal">people</Text>
+                            {Math.pow(2, item.stats.generation) * 2} <Text className="text-xs text-gray-400 font-normal">{t('common.people')}</Text>
                         </Text>
                     )}
                 </View>
@@ -193,7 +201,7 @@ export default function UserImpactScreen() {
                     </View>
                 </View>
                 <Text className="text-xs text-gray-400">
-                    and others joined this wave
+                    {t('myForward.othersJoinedWave')}
                 </Text>
             </View>
         </TouchableOpacity>
@@ -213,7 +221,7 @@ export default function UserImpactScreen() {
                         </TouchableOpacity>
                     </View>
                     <View className="items-center justify-center">
-                        <Text className="text-lg font-bold text-gray-900 tracking-tight">{userId}'s Impact</Text>
+                        <Text className="text-lg font-bold text-gray-900 tracking-tight">{`${userId}${t('profile.impactSuffix')}`}</Text>
                     </View>
                     <View className="w-8" />
                 </View>
@@ -227,7 +235,7 @@ export default function UserImpactScreen() {
                     >
                         <View className="flex-row justify-between items-start mb-6">
                             <View>
-                                <Text className="text-sky-100 font-medium text-xs tracking-widest mb-1">TOTAL LIVES TOUCHED</Text>
+                                <Text className="text-sky-100 font-medium text-xs tracking-widest mb-1">{t('myForward.totalLivesTouched')}</Text>
                                 <Text className="text-4xl font-extrabold text-white">{totalImpact}</Text>
                             </View>
                             <View className="bg-white/20 p-2 rounded-full">
@@ -237,11 +245,11 @@ export default function UserImpactScreen() {
 
                         <View className="flex-row gap-4">
                             <View className="bg-black/10 flex-1 p-3 rounded-xl">
-                                <Text className="text-sky-50 text-[10px] font-bold">CHAINS STARTED</Text>
+                                <Text className="text-sky-50 text-[10px] font-bold">{t('myForward.chainsStarted')}</Text>
                                 <Text className="text-xl font-bold text-white">{activeChainsCount}</Text>
                             </View>
                             <View className="bg-black/10 flex-1 p-3 rounded-xl">
-                                <Text className="text-sky-50 text-[10px] font-bold">TOTAL GENERATIONS</Text>
+                                <Text className="text-sky-50 text-[10px] font-bold">{t('myForward.totalGenerations')}</Text>
                                 <Text className="text-xl font-bold text-white">{totalGenerations}</Text>
                             </View>
                         </View>
@@ -253,13 +261,13 @@ export default function UserImpactScreen() {
                             className={`flex-1 py-2 items-center rounded-lg ${activeTab === 'ignited' ? 'bg-white shadow-sm' : ''}`}
                             onPress={() => setActiveTab('ignited')}
                         >
-                            <Text className={`font-bold ${activeTab === 'ignited' ? 'text-gray-900' : 'text-gray-500'}`}>Ignited</Text>
+                            <Text className={`font-bold ${activeTab === 'ignited' ? 'text-gray-900' : 'text-gray-500'}`}>{t('myForward.tab.ignited')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             className={`flex-1 py-2 items-center rounded-lg ${activeTab === 'invited' ? 'bg-white shadow-sm' : ''}`}
                             onPress={() => setActiveTab('invited')}
                         >
-                            <Text className={`font-bold ${activeTab === 'invited' ? 'text-gray-900' : 'text-gray-500'}`}>Invited</Text>
+                            <Text className={`font-bold ${activeTab === 'invited' ? 'text-gray-900' : 'text-gray-500'}`}>{t('myForward.tab.invited')}</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -270,7 +278,7 @@ export default function UserImpactScreen() {
                             onPress={() => setFilterModalVisible(true)}
                             className="flex-row items-center"
                         >
-                            <Text className="text-sm font-bold text-sky-500 mr-1">{filter === 'All' ? 'View All' : filter}</Text>
+                            <Text className="text-sm font-bold text-sky-500 mr-1">{filter === 'All' ? t('myForward.viewAll') : filterLabel(filter)}</Text>
                             <Feather name="chevron-down" size={16} color="#0EA5E9" />
                         </TouchableOpacity>
                     </View>
@@ -284,7 +292,7 @@ export default function UserImpactScreen() {
                         ))
                     ) : (
                         <View className="items-center justify-center py-10">
-                            <Text className="text-gray-400 text-sm">No {filter === 'All' ? '' : filter.toLowerCase()} chains found.</Text>
+                            <Text className="text-gray-400 text-sm">{t('myForward.noChainsFound')}</Text>
                         </View>
                     )}
 
@@ -306,7 +314,7 @@ export default function UserImpactScreen() {
                         onPress={() => setFilterModalVisible(false)}
                     >
                         <View className="bg-white rounded-2xl w-3/4 max-w-sm p-6 shadow-xl m-4">
-                            <Text className="text-lg font-bold text-gray-900 mb-4 text-center">Filter Chains</Text>
+                            <Text className="text-lg font-bold text-gray-900 mb-4 text-center">{t('myForward.filterChains')}</Text>
 
                             {(['All', 'Active', 'Completed', 'Archived'] as FilterOption[]).map((option) => (
                                 <TouchableOpacity
@@ -318,7 +326,7 @@ export default function UserImpactScreen() {
                                     }}
                                 >
                                     <Text className={`text-center font-medium ${filter === option ? 'text-sky-500' : 'text-gray-700'}`}>
-                                        {option}
+                                        {filterLabel(option)}
                                     </Text>
                                 </TouchableOpacity>
                             ))}
@@ -327,7 +335,7 @@ export default function UserImpactScreen() {
                                 className="mt-4 py-2"
                                 onPress={() => setFilterModalVisible(false)}
                             >
-                                <Text className="text-center text-gray-500 text-sm">Cancel</Text>
+                                <Text className="text-center text-gray-500 text-sm">{t('common.cancel')}</Text>
                             </TouchableOpacity>
                         </View>
                     </TouchableOpacity>

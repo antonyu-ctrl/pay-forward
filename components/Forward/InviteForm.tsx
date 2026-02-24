@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useI18n } from '../../lib/i18n';
 
 interface Recipient {
     type: 'email' | 'user';
@@ -22,6 +23,7 @@ const MOCK_USERS = [
 ];
 
 export default function InviteForm({ onRecipientsChange, branchingLimit }: Props) {
+    const { t } = useI18n();
     const [activeTab, setActiveTab] = useState<'search' | 'email'>('search');
     const [searchText, setSearchText] = useState('');
     const [invitedList, setInvitedList] = useState<Recipient[]>([]);
@@ -82,13 +84,13 @@ export default function InviteForm({ onRecipientsChange, branchingLimit }: Props
                     onPress={() => setActiveTab('search')}
                     className={`flex-1 py-2 items-center rounded-lg ${activeTab === 'search' ? 'bg-white shadow-sm' : ''}`}
                 >
-                    <Text className={`text-xs font-bold ${activeTab === 'search' ? 'text-sky-600' : 'text-gray-400'}`}>SEARCH USER</Text>
+                    <Text className={`text-xs font-bold ${activeTab === 'search' ? 'text-sky-600' : 'text-gray-400'}`}>{t('create.searchUser')}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={() => setActiveTab('email')}
                     className={`flex-1 py-2 items-center rounded-lg ${activeTab === 'email' ? 'bg-white shadow-sm' : ''}`}
                 >
-                    <Text className={`text-xs font-bold ${activeTab === 'email' ? 'text-sky-600' : 'text-gray-400'}`}>BY EMAIL</Text>
+                    <Text className={`text-xs font-bold ${activeTab === 'email' ? 'text-sky-600' : 'text-gray-400'}`}>{t('create.byEmail')}</Text>
                 </TouchableOpacity>
             </View>
 
@@ -97,7 +99,7 @@ export default function InviteForm({ onRecipientsChange, branchingLimit }: Props
                 <Feather name={activeTab === 'search' ? 'search' : 'mail'} size={20} color="#9CA3AF" />
                 <TextInput
                     className="flex-1 ml-2 text-gray-900 text-base"
-                    placeholder={activeTab === 'search' ? "Search by name or ID..." : "Enter email address..."}
+                    placeholder={activeTab === 'search' ? t('create.searchByNameOrId') : t('create.enterEmailAddress')}
                     placeholderTextColor="#9CA3AF"
                     value={searchText}
                     onChangeText={setSearchText}
@@ -105,7 +107,7 @@ export default function InviteForm({ onRecipientsChange, branchingLimit }: Props
                 />
                 {activeTab === 'email' && searchText.length > 0 && (
                     <TouchableOpacity onPress={handleAddEmail}>
-                        <Text className="text-sky-600 font-bold ml-2">ADD</Text>
+                        <Text className="text-sky-600 font-bold ml-2">{t('create.add')}</Text>
                     </TouchableOpacity>
                 )}
             </View>
@@ -139,12 +141,12 @@ export default function InviteForm({ onRecipientsChange, branchingLimit }: Props
             {/* Invited List */}
             <View className="mt-4">
                 <Text className="text-xs text-gray-400 mb-2 font-medium">
-                    INVITED ({invitedList.length}/{branchingLimit})
+                    {t('create.invited')} ({invitedList.length}/{branchingLimit})
                 </Text>
 
                 {invitedList.length === 0 ? (
                     <View className="p-6 border border-dashed border-gray-200 rounded-xl items-center bg-gray-50/50">
-                        <Text className="text-gray-400 text-xs">Add people to start the chain</Text>
+                        <Text className="text-gray-400 text-xs">{t('create.addPeopleToStartChain')}</Text>
                     </View>
                 ) : (
                     <View className="space-y-2">

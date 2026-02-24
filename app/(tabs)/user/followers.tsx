@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Image, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useI18n } from '../../../lib/i18n';
 import {
     doIFollow,
     getUsersByIds,
@@ -13,12 +14,13 @@ import {
 
 export default function FollowersScreen() {
     const router = useRouter();
+    const { t } = useI18n();
     const { userId, returnTo } = useLocalSearchParams<{ userId: string; returnTo?: string }>();
     const [searchQuery, setSearchQuery] = useState('');
 
     const isMyProfile = !userId || userId === MY_USER_ID;
     const followers = isMyProfile ? getUsersByIds(MY_FOLLOWERS) : [];
-    const title = isMyProfile ? 'Followers' : `${userId}'s Followers`;
+    const title = isMyProfile ? t('nav.followers') : `${userId}'s ${t('nav.followers')}`;
 
     const handleGoBack = () => {
         if (returnTo) {
@@ -62,7 +64,7 @@ export default function FollowersScreen() {
                             <Feather name="search" size={18} color="#9CA3AF" />
                             <TextInput
                                 className="flex-1 ml-2 text-sm text-gray-900"
-                                placeholder="Search"
+                                placeholder={t('followers.searchPlaceholder')}
                                 placeholderTextColor="#9CA3AF"
                                 value={searchQuery}
                                 onChangeText={setSearchQuery}
@@ -116,6 +118,8 @@ interface FollowerItemProps {
 }
 
 function FollowerItem({ user, iFollowThem, onPress }: FollowerItemProps) {
+    const { t } = useI18n();
+
     return (
         <TouchableOpacity
             className="flex-row items-center px-4 py-3 border-b border-gray-50"
@@ -132,11 +136,11 @@ function FollowerItem({ user, iFollowThem, onPress }: FollowerItemProps) {
             </View>
             {iFollowThem ? (
                 <View className="bg-gray-100 px-4 py-2 rounded-full min-w-[100px] items-center">
-                    <Text className="text-sm font-semibold text-gray-700">Following</Text>
+                    <Text className="text-sm font-semibold text-gray-700">{t('followers.following')}</Text>
                 </View>
             ) : (
                 <TouchableOpacity className="bg-sky-500 px-4 py-2 rounded-full min-w-[100px] items-center">
-                    <Text className="text-sm font-bold text-white">Follow</Text>
+                    <Text className="text-sm font-bold text-white">{t('followers.follow')}</Text>
                 </TouchableOpacity>
             )}
         </TouchableOpacity>

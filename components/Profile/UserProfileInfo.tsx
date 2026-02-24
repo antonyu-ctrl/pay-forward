@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { useI18n } from '../../lib/i18n';
 import AnimatedGradientBorder from '../UI/AnimatedGradientBorder';
 
 interface Props {
@@ -24,6 +25,7 @@ interface Props {
 
 export default function UserProfileInfo({ user, activeTab, onTabChange, isFollower }: Props) {
     const router = useRouter();
+    const { t } = useI18n();
 
     // Determine available tabs based on relationship
     const tabs = isFollower
@@ -69,21 +71,21 @@ export default function UserProfileInfo({ user, activeTab, onTabChange, isFollow
                 <View className="flex-1 flex-row justify-around ml-4">
                     <View className="items-center">
                         <Text className="text-lg font-bold text-gray-900">{user.stats.posts}</Text>
-                        <Text className="text-xs text-gray-500">Posts</Text>
+                        <Text className="text-xs text-gray-500">{t('profile.posts')}</Text>
                     </View>
                     <TouchableOpacity
                         className="items-center"
                         onPress={() => router.push({ pathname: '/user/followers', params: { userId: user.username, returnTo: `/user/${user.username}` } } as any)}
                     >
                         <Text className="text-lg font-bold text-gray-900">{user.stats.followers}</Text>
-                        <Text className="text-xs text-gray-500">Followers</Text>
+                        <Text className="text-xs text-gray-500">{t('profile.followers')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                         className="items-center"
                         onPress={() => router.push({ pathname: '/user/following', params: { userId: user.username, returnTo: `/user/${user.username}` } } as any)}
                     >
                         <Text className="text-lg font-bold text-gray-900">{user.stats.following}</Text>
-                        <Text className="text-xs text-gray-500">Following</Text>
+                        <Text className="text-xs text-gray-500">{t('profile.following')}</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -102,14 +104,14 @@ export default function UserProfileInfo({ user, activeTab, onTabChange, isFollow
                     className="flex-1 bg-sky-500 py-2.5 rounded-lg items-center active:opacity-70"
                     onPress={() => router.push({ pathname: '/user/user-impact', params: { userId: user.username, returnTo: `/user/${user.username}` } } as any)}
                 >
-                    <Text className="font-bold text-sm text-white">{user.username}'s Impact</Text>
+                    <Text className="font-bold text-sm text-white">{`${user.username}${t('profile.impactSuffix')}`}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     className="flex-1 flex-row bg-sky-500 py-2.5 rounded-lg items-center justify-center active:opacity-70 gap-1.5"
                     onPress={() => router.push({ pathname: '/chat/[userId]', params: { userId: user.username } } as any)}
                 >
                     <Feather name="send" size={16} color="white" />
-                    <Text className="font-bold text-sm text-white">Message</Text>
+                    <Text className="font-bold text-sm text-white">{t('profile.message')}</Text>
                 </TouchableOpacity>
             </View>
 
@@ -117,6 +119,11 @@ export default function UserProfileInfo({ user, activeTab, onTabChange, isFollow
             <View className="flex-row mt-4 pt-1 border-b border-gray-100 pb-0">
                 {tabs.map((tab) => {
                     const isActive = activeTab === tab;
+                    const label = tab === 'Post'
+                        ? t('profile.tab.post')
+                        : tab === 'Following'
+                            ? t('profile.tab.following')
+                            : t('profile.tab.media');
                     return (
                         <TouchableOpacity
                             key={tab}
@@ -124,7 +131,7 @@ export default function UserProfileInfo({ user, activeTab, onTabChange, isFollow
                             onPress={() => onTabChange(tab)}
                         >
                             <Text className={`text-sm ${isActive ? 'font-bold text-gray-900' : 'font-medium text-gray-400'}`}>
-                                {tab}
+                                {label}
                             </Text>
                         </TouchableOpacity>
                     );

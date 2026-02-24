@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { useI18n } from '../../lib/i18n';
 
 export type CategoryType = 'coffee' | 'meal' | 'book' | 'cheer' | 'mentor' | 'gift' | 'thanks';
 
@@ -21,9 +22,20 @@ interface MiniCategorySelectorProps {
 }
 
 export default function MiniCategorySelector({ selected, onSelect }: MiniCategorySelectorProps) {
+    const { t } = useI18n();
+    const labels: Record<CategoryType, string> = {
+        coffee: t('create.category.coffee'),
+        meal: t('create.category.meal'),
+        book: t('create.category.book'),
+        cheer: t('create.category.cheerUp'),
+        mentor: t('create.category.mentor'),
+        gift: t('create.category.gift'),
+        thanks: t('create.category.thanks'),
+    };
+
     return (
         <View className="py-2">
-            <Text className="text-xs font-bold text-gray-500 mb-3 px-1 tracking-widest">CHOOSE THEME</Text>
+            <Text className="text-xs font-bold text-gray-500 mb-3 px-1 tracking-widest">{t('create.chooseTheme')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-1">
                 {CATEGORIES.map((cat) => {
                     const isSelected = selected === cat.id;
@@ -50,7 +62,7 @@ export default function MiniCategorySelector({ selected, onSelect }: MiniCategor
                                     numberOfLines={1}
                                     className={`text-[10px] font-bold px-1 ${isSelected ? 'text-sky-700' : 'text-sky-300'
                                         }`}>
-                                    {cat.label}
+                                    {labels[cat.id]}
                                 </Text>
                             </View>
                         </TouchableOpacity>

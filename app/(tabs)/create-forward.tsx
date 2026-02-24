@@ -7,9 +7,11 @@ import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, Tou
 import ImpactCalculator from '../../components/Forward/ImpactCalculator';
 import InviteForm from '../../components/Forward/InviteForm';
 import MiniCategorySelector, { CategoryType } from '../../components/Forward/MiniCategorySelector';
+import { useI18n } from '../../lib/i18n';
 
 export default function CreateForwardScreen() {
     const router = useRouter();
+    const { t } = useI18n();
 
     const [title, setTitle] = useState('');
     const [timeLimit, setTimeLimit] = useState('');
@@ -79,7 +81,7 @@ export default function CreateForwardScreen() {
                             <Feather name="chevron-left" size={26} color="#4B5563" />
                         </TouchableOpacity>
 
-                        <Text className="text-base font-bold text-gray-900">New Chain</Text>
+                        <Text className="text-base font-bold text-gray-900">{t('create.newChain')}</Text>
 
                         <View className="w-10" />
                     </View>
@@ -97,7 +99,7 @@ export default function CreateForwardScreen() {
 
                             {/* Section 0: Title */}
                             <View className="mb-8">
-                                <Text className="text-xs font-bold text-gray-500 mb-3 px-1 tracking-widest">CHAIN TITLE</Text>
+                                <Text className="text-xs font-bold text-gray-500 mb-3 px-1 tracking-widest">{t('create.chainTitle')}</Text>
                                 <TextInput
                                     className="bg-white p-4 rounded-2xl border border-gray-100 text-base font-bold text-gray-900"
                                     placeholder="e.g., Morning Coffee Relay"
@@ -114,12 +116,12 @@ export default function CreateForwardScreen() {
 
                             {/* Section 2: Rules (Impact) */}
                             <View className="mb-8">
-                                <Text className="text-xs font-bold text-gray-500 mb-3 px-1 tracking-widest">DESIGN RULES</Text>
+                                <Text className="text-xs font-bold text-gray-500 mb-3 px-1 tracking-widest">{t('create.designRules')}</Text>
                                 <View className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
                                     <View className="mb-4 pb-4 border-b border-gray-100 flex-row items-center justify-between">
                                         <View>
-                                            <Text className="text-gray-600 font-medium text-sm">Hours to Forward</Text>
-                                            <Text className="text-xs text-gray-400 mt-0.5">Time limit (hours)</Text>
+                                            <Text className="text-gray-600 font-medium text-sm">{t('create.hoursToForward')}</Text>
+                                            <Text className="text-xs text-gray-400 mt-0.5">{t('create.timeLimitHours')}</Text>
                                         </View>
                                         <TextInput
                                             className="bg-gray-50 w-28 h-10 rounded-xl border border-gray-200 text-base font-bold text-gray-900 text-center"
@@ -145,7 +147,7 @@ export default function CreateForwardScreen() {
 
                             {/* Section 3: Invite */}
                             <View className="mb-8">
-                                <Text className="text-xs font-bold text-gray-500 mb-3 px-1 tracking-widest">INVITE STARTERS</Text>
+                                <Text className="text-xs font-bold text-gray-500 mb-3 px-1 tracking-widest">{t('create.inviteStarters')}</Text>
                                 <InviteForm
                                     branchingLimit={branching}
                                     onRecipientsChange={setRecipients}
@@ -160,7 +162,7 @@ export default function CreateForwardScreen() {
                                     className="w-full bg-sky-500 py-4 rounded-xl items-center justify-center shadow-lg shadow-sky-100 flex-row gap-2"
                                 >
                                     <Text className="text-white font-bold text-base">
-                                        Ignite Chain
+                                        {t('create.igniteChain')}
                                     </Text>
                                     <Feather name="zap" size={20} color="white" />
                                 </TouchableOpacity>
@@ -185,13 +187,13 @@ export default function CreateForwardScreen() {
                                         onPress={() => setShowConfirmModal(false)}
                                         className="flex-1 py-3 bg-gray-100 rounded-xl items-center"
                                     >
-                                        <Text className="text-gray-700 font-bold">Not Yet</Text>
+                                        <Text className="text-gray-700 font-bold">{t('create.notYet')}</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         onPress={proceedToFeed}
                                         className="flex-1 py-3 bg-sky-500 rounded-xl items-center"
                                     >
-                                        <Text className="text-white font-bold">Yes, Let's Go</Text>
+                                        <Text className="text-white font-bold">{t('create.yesLetsGo')}</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -205,7 +207,7 @@ export default function CreateForwardScreen() {
                                 <View className="w-12 h-12 bg-orange-100 rounded-full items-center justify-center mb-4">
                                     <Feather name="users" size={24} color="#F97316" />
                                 </View>
-                                <Text className="text-lg font-bold text-gray-900 mb-2">Almost Ready!</Text>
+                                <Text className="text-lg font-bold text-gray-900 mb-2">{t('create.almostReady')}</Text>
                                 <Text className="text-gray-500 text-center mb-6 leading-relaxed">
                                     To spread the love as you planned, please invite exactly <Text className="font-bold text-gray-800">{branching}</Text> friends.
                                     {'\n'}Currently selected: <Text className="font-bold text-orange-500">{recipients.length}</Text>
@@ -214,7 +216,7 @@ export default function CreateForwardScreen() {
                                     onPress={() => setShowWarningModal(false)}
                                     className="w-full py-3 bg-sky-500 rounded-xl items-center"
                                 >
-                                    <Text className="text-white font-bold">Okay, I'll add more</Text>
+                                    <Text className="text-white font-bold">{t('create.okAddMore')}</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>

@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useI18n } from '../../lib/i18n';
 
 
 
@@ -15,6 +16,7 @@ function TabBarIcon(props: {
 }
 
 export default function TabLayout() {
+  const { t } = useI18n();
 
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
@@ -39,35 +41,35 @@ export default function TabLayout() {
         <Tabs.Screen
           name="index"
           options={{
-            title: 'Home',
+            title: t('nav.home'),
             tabBarIcon: ({ color }) => <TabBarIcon name="home" color={color} />,
           }}
         />
         <Tabs.Screen
           name="my-forward"
           options={{
-            title: 'My Forward',
+            title: t('nav.myForward'),
             tabBarIcon: ({ color }) => <TabBarIcon name="layers" color={color} />,
           }}
         />
         <Tabs.Screen
           name="search"
           options={{
-            title: 'Search',
+            title: t('nav.search'),
             tabBarIcon: ({ color }) => <TabBarIcon name="search" color={color} />,
           }}
         />
         <Tabs.Screen
           name="inbox"
           options={{
-            title: 'Inbox',
+            title: t('nav.inbox'),
             tabBarIcon: ({ color }) => <TabBarIcon name="send" color={color} />,
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
-            title: 'Profile',
+            title: t('nav.profile'),
             tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
           }}
         />
@@ -75,35 +77,42 @@ export default function TabLayout() {
           name="create-forward"
           options={{
             href: null, // Hide from tab bar
-            title: 'New Chain',
+            title: t('nav.newChain'),
           }}
         />
         <Tabs.Screen
           name="user/[userId]"
           options={{
             href: null,
-            title: 'User Profile',
+            title: t('nav.userProfile'),
           }}
         />
         <Tabs.Screen
           name="user/followers"
           options={{
             href: null,
-            title: 'Followers',
+            title: t('nav.followers'),
           }}
         />
         <Tabs.Screen
           name="user/following"
           options={{
             href: null,
-            title: 'Following',
+            title: t('nav.following'),
           }}
         />
         <Tabs.Screen
           name="user/user-impact"
           options={{
             href: null,
-            title: 'User Impact',
+            title: t('nav.userImpact'),
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            href: null,
+            title: t('nav.userSetting'),
           }}
         />
       </Tabs>

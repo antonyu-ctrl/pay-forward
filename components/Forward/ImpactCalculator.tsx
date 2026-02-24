@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { useI18n } from '../../lib/i18n';
 
 const { width } = Dimensions.get('window');
 
@@ -13,6 +14,7 @@ interface Props {
 
 
 export default function ImpactCalculator({ initialBranching = 2, initialDepth = 3, onChange }: Props) {
+    const { t } = useI18n();
     const [branching, setBranching] = useState(initialBranching);
     const [depth, setDepth] = useState(initialDepth);
 
@@ -48,7 +50,7 @@ export default function ImpactCalculator({ initialBranching = 2, initialDepth = 
 
                 {/* Branching Factor Control */}
                 <View className="flex-row items-center justify-between">
-                    <Text className="text-gray-600 font-medium text-sm">Pass to</Text>
+                    <Text className="text-gray-600 font-medium text-sm">{t('create.passTo')}</Text>
                     <View className="flex-row space-x-2">
                         {[2, 3, 4].map((num) => (
                             <TouchableOpacity
@@ -71,7 +73,7 @@ export default function ImpactCalculator({ initialBranching = 2, initialDepth = 
 
                 {/* Depth Control */}
                 <View className="flex-row items-center justify-between">
-                    <Text className="text-gray-600 font-medium text-sm">Generations</Text>
+                    <Text className="text-gray-600 font-medium text-sm">{t('create.generations')}</Text>
                     <View className="flex-row items-center bg-white rounded-full border border-gray-200 px-1 py-1 w-28" style={{ justifyContent: 'space-between' }}>
                         <TouchableOpacity
                             onPress={() => setDepth(Math.max(2, depth - 1))}
@@ -98,7 +100,7 @@ export default function ImpactCalculator({ initialBranching = 2, initialDepth = 
             {/* Impact Metric - Moved to Bottom & Compact */}
             <View className="items-center pt-4 border-t border-gray-100">
                 <Text className="text-gray-400 text-xs font-medium mb-1 uppercase tracking-wider">
-                    People will be touched
+                    {t('create.peopleWillBeTouched')}
                 </Text>
                 <Animated.Text
                     style={[animatedNumberStyle, { color: '#0EA5E9', fontSize: 32, fontWeight: '800' }]}
