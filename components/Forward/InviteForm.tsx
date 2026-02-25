@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import React, { useState } from 'react';
-import { Alert, Image, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useI18n } from '../../lib/i18n';
 
 interface Recipient {

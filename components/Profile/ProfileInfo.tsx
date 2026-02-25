@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { MY_USER_ID } from '../../data/mockUsers';
 import { useI18n } from '../../lib/i18n';
 import AnimatedGradientBorder from '../UI/AnimatedGradientBorder';

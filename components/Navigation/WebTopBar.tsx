@@ -4,7 +4,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { useI18n } from '../../lib/i18n';
 
-export default function WebTopBar() {
+const WebTopBar = React.memo(function WebTopBar() {
     const router = useRouter();
     const pathname = usePathname();
     const { t } = useI18n();
@@ -61,4 +61,6 @@ export default function WebTopBar() {
         </View>
 
     );
-}
+});
+
+export default WebTopBar;

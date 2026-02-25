@@ -16,7 +16,7 @@ interface SafeGradientProps extends ViewProps {
  * On Web, if expo-linear-gradient fails, we can fallback to CSS or a solid color.
  * However, expo-linear-gradient SHOULD work on web. If it crashes, we use this to debug/fallback.
  */
-export default function SafeGradient({
+const SafeGradient = React.memo(function SafeGradient({
     colors,
     start,
     end,
@@ -53,4 +53,6 @@ export default function SafeGradient({
             {children}
         </LinearGradient>
     );
-}
+});
+
+export default SafeGradient;

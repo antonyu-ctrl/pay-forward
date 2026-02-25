@@ -1,56 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { FlatList, Platform, Text, View } from 'react-native';
+import { HOME_FEED_DATA } from '../../data/mockFeeds';
 import ForwardBar from './ForwardBar';
 import PayForwardFeedItem from './PayForwardFeedItem';
-
-// Dummy Data
-const FEED_DATA = [
-    {
-        id: '1',
-        avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1887&q=80',
-        username: 'community_roots',
-        timeAgo: '2h ago',
-        mainImageUrl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=987&q=80',
-        forwardedTo: '@alice',
-        caption: 'Treated Alice to a warm coffee today. It’s small, but it starts here. ☕️',
-        likesCount: 24,
-    },
-    {
-        id: '2',
-        avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1760&q=80',
-        username: 'alex_builder',
-        timeAgo: '5h ago',
-        mainImageUrl: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2340&q=80',
-        forwardedTo: '@mark_k',
-        caption: 'Passed on the kindness by helping Mark with his moving boxes. Paying it forward!',
-        likesCount: 56,
-        replies: [
-            {
-                id: '2a',
-                avatarUrl: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80',
-                username: 'Anton_Yu',
-                timeAgo: '4h',
-                forwardedTo: '@mark_k',
-                caption: 'Love seeing this! I was just talking to Mark yesterday.',
-                likesCount: 12,
-            }
-        ]
-    },
-    {
-        id: '3',
-        avatarUrl: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1760&q=80',
-        username: 'sarah_writer',
-        timeAgo: '1d ago',
-        // No mainImageUrl for text-only post
-        forwardedTo: '@community_center',
-        caption: 'Just dropped off some books at the local community center. Reading can change lives! 📚✨ Hope they find good homes.',
-        likesCount: 15,
-    },
-];
-
-import { Ionicons } from '@expo/vector-icons'; // Added import
-
-// ... imports
 
 const HomeFeed = () => {
     return (
@@ -73,8 +26,8 @@ const HomeFeed = () => {
                     <ForwardBar />
                 </View>
                 <FlatList
-                    data={FEED_DATA}
-                    keyExtractor={(item) => item.id}
+                    data={HOME_FEED_DATA}
+                    keyExtractor={(item) => item.id!}
                     renderItem={({ item }) => (
                         <PayForwardFeedItem
                             id={item.id}
@@ -90,6 +43,9 @@ const HomeFeed = () => {
                     )}
                     contentContainerStyle={{ paddingBottom: 20 }}
                     showsVerticalScrollIndicator={false}
+                    removeClippedSubviews={Platform.OS !== 'web'}
+                    maxToRenderPerBatch={5}
+                    windowSize={5}
                 />
             </View>
         </View>

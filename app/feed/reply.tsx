@@ -4,7 +4,6 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useCallback, useRef, useState } from 'react';
 import {
     Dimensions,
-    Image,
     KeyboardAvoidingView,
     PanResponder,
     Platform,
@@ -15,6 +14,7 @@ import {
     useWindowDimensions,
     View,
 } from 'react-native';
+import { Image } from 'expo-image';
 import CustomSlider from '../../components/UI/CustomSlider';
 
 const screenWidth = Dimensions.get('window').width;
@@ -255,7 +255,7 @@ export default function ReplyScreen() {
                                         },
                                         editorFilterStyle as any,
                                     ]}
-                                    resizeMode="contain"
+                                    contentFit="contain"
                                 />
                                 <View
                                     className={`absolute inset-0 pointer-events-none ${getOverlayClass(tempFilter.filter)}`}
@@ -426,7 +426,7 @@ export default function ReplyScreen() {
                                                             { aspectRatio: 4 / 3 },
                                                             buildFilterStyle(imageFilters[0] ?? DEFAULT_FILTER) as any,
                                                         ]}
-                                                        resizeMode="cover"
+                                                        contentFit="cover"
                                                     />
                                                     <View
                                                         className={`absolute inset-0 pointer-events-none ${getOverlayClass((imageFilters[0] ?? DEFAULT_FILTER).filter)}`}
@@ -473,7 +473,7 @@ export default function ReplyScreen() {
                                                                 source={{ uri }}
                                                                 className="w-full h-full bg-gray-100"
                                                                 style={buildFilterStyle(fs) as any}
-                                                                resizeMode="cover"
+                                                                contentFit="cover"
                                                             />
                                                             <View
                                                                 className={`absolute inset-0 pointer-events-none ${getOverlayClass(fs.filter)}`}

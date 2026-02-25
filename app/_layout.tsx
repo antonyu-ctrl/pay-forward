@@ -8,6 +8,8 @@ import 'react-native-reanimated';
 import '../global.css';
 
 import WebTopBar from '@/components/Navigation/WebTopBar';
+import AppErrorBoundary from '@/components/UI/ErrorBoundary';
+import { DESKTOP_BREAKPOINT } from '@/constants/Layout';
 import { I18nProvider } from '@/lib/i18n';
 import { useColorScheme, useWindowDimensions } from 'react-native';
 
@@ -51,11 +53,12 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 768;
+  const isDesktop = width >= DESKTOP_BREAKPOINT;
 
   return (
     <I18nProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <AppErrorBoundary>
         {/* WebTopBar — always visible on desktop, all routes */}
         {isDesktop && <WebTopBar />}
         <Stack>
@@ -67,7 +70,7 @@ function RootLayoutNav() {
           <Stack.Screen name="chat/[userId]" options={{ headerShown: false }} />
           <Stack.Screen name="chain/[userId]" options={{ headerShown: false }} />
         </Stack>
-
+        </AppErrorBoundary>
       </ThemeProvider>
     </I18nProvider>
   );

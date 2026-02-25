@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Image, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import SafeGradient from '../../../components/SafeGradient';
 import { useI18n } from '../../../lib/i18n';
 

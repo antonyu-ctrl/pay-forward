@@ -1,7 +1,8 @@
 import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { MY_USER_ID } from '../../data/mockUsers';
 
 export interface FeedItemProps {
@@ -21,7 +22,7 @@ export interface FeedItemProps {
     showMyRepliesInline?: boolean; // Only show MY replies inline (Profile > Post)
 }
 
-const PayForwardFeedItem: React.FC<FeedItemProps> = ({
+const PayForwardFeedItem: React.FC<FeedItemProps> = React.memo(({
     id,
     avatarUrl,
     username,
@@ -119,7 +120,7 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = ({
                         {/* Main Visual */}
                         {mainImageUrl && (
                             <View className="w-full relative rounded-2xl overflow-hidden border border-gray-100 mb-3 bg-gray-100">
-                                <Image source={{ uri: mainImageUrl }} className="w-full aspect-[4/3] resize-cover" />
+                                <Image source={{ uri: mainImageUrl }} className="w-full aspect-[4/3]" contentFit="cover" />
                             </View>
                         )}
                     </TouchableOpacity>
@@ -182,6 +183,8 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = ({
             )}
         </>
     );
-};
+});
+
+PayForwardFeedItem.displayName = 'PayForwardFeedItem';
 
 export default PayForwardFeedItem;

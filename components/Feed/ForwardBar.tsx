@@ -1,6 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import AnimatedGradientBorder from '../UI/AnimatedGradientBorder';
 
 // Shared data source — only users with active chain activity appear here
@@ -12,7 +14,7 @@ const ACTIVE_CHAIN_USERS = [
     { id: '7', username: 'james', avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80' },
 ];
 
-const ForwardBar = () => {
+const ForwardBar = React.memo(() => {
     const router = useRouter();
 
     return (
@@ -57,6 +59,8 @@ const ForwardBar = () => {
             </ScrollView>
         </View>
     );
-};
+});
+
+ForwardBar.displayName = 'ForwardBar';
 
 export default ForwardBar;
