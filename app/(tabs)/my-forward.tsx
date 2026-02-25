@@ -1,7 +1,8 @@
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Image, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { FlatList, Modal, Platform, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import SafeGradient from '../../components/SafeGradient';
 import { useI18n } from '../../lib/i18n';
 
@@ -113,13 +114,13 @@ export default function MyForwardScreen() {
     const [filterModalVisible, setFilterModalVisible] = useState(false);
 
     // Aggregate Stats (only count 'ignited' chains as requested)
-    const ignitedChains = chains.filter(c => c.type === 'ignited');
-    const totalImpact = ignitedChains.reduce((acc, chain) => acc + chain.stats.impact, 0);
-    const activeChainsCount = ignitedChains.length; // Count all ignited chains regardless of status
-    const totalGenerations = ignitedChains.reduce((acc, chain) => acc + chain.stats.generation, 0);
+    const ignitedChains = useMemo(() => chains.filter(c => c.type === 'ignited'), [chains]);
+    const totalImpact = useMemo(() => ignitedChains.reduce((acc, chain) => acc + chain.stats.impact, 0), [ignitedChains]);
+    const activeChainsCount = ignitedChains.length;
+    const totalGenerations = useMemo(() => ignitedChains.reduce((acc, chain) => acc + chain.stats.generation, 0), [ignitedChains]);
 
     // Filter Logic
-    const displayedChains = chains.filter(chain => {
+    const displayedChains = useMemo(() => chains.filter(chain => {
         // 1. Tab Filter (Ignited vs Invited)
         if (chain.type !== activeTab) return false;
 
@@ -133,7 +134,7 @@ export default function MyForwardScreen() {
             if (filter === 'All') return true;
             return chain.status === filter;
         }
-    });
+    }), [chains, activeTab, filter]);
 
     const filterLabel = (option: FilterOption) => {
         if (option === 'All') return t('myForward.filter.all');
@@ -142,16 +143,16 @@ export default function MyForwardScreen() {
         return t('myForward.filter.archived');
     };
 
-    const toggleArchive = (id: string) => {
+    const toggleArchive = useCallback((id: string) => {
         setChains(prev => prev.map(chain => {
             if (chain.id === id) {
                 return { ...chain, isArchived: !chain.isArchived };
             }
             return chain;
         }));
-    };
+    }, []);
 
-    const renderChainCard = ({ item }: { item: ChainItem }) => (
+    const renderChainCard = useCallback(({ item }: { item: ChainItem }) => (
         <TouchableOpacity
             activeOpacity={0.9}
             className="bg-white mb-4 rounded-2xl p-4 border border-gray-100 shadow-sm relative"
@@ -237,7 +238,7 @@ export default function MyForwardScreen() {
                 </TouchableOpacity>
             )}
         </TouchableOpacity>
-    );
+    ), [t, toggleArchive]);
 
     return (
         <View
@@ -250,89 +251,91 @@ export default function MyForwardScreen() {
                     <Text className="text-lg font-bold text-gray-900 tracking-tight">{t('myForward.title')}</Text>
                 </View>
 
-                <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 100 }} showsVerticalScrollIndicator={false}>
+                <FlatList
+                    data={displayedChains}
+                    keyExtractor={(item) => item.id}
+                    renderItem={renderChainCard}
+                    contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
+                    showsVerticalScrollIndicator={false}
+                    removeClippedSubviews={Platform.OS !== 'web'}
+                    ListHeaderComponent={
+                        <>
+                            {/* Hero Stats Card */}
+                            <SafeGradient
+                                colors={['#0EA5E9', '#38BDF8']}
+                                className="rounded-3xl p-6 mb-8 shadow-lg shadow-sky-200"
+                            >
+                                <View className="flex-row justify-between items-start mb-6">
+                                    <View>
+                                        <Text className="text-sky-100 font-medium text-xs tracking-widest mb-1">{t('myForward.totalLivesTouched')}</Text>
+                                        <Text className="text-4xl font-extrabold text-white">{totalImpact}</Text>
+                                    </View>
+                                    <View className="bg-white/20 p-2 rounded-full">
+                                        <Feather name="globe" size={24} color="white" />
+                                    </View>
+                                </View>
 
-                    {/* Hero Stats Card */}
-                    <SafeGradient
-                        colors={['#0EA5E9', '#38BDF8']}
-                        className="rounded-3xl p-6 mb-8 shadow-lg shadow-sky-200"
-                    >
-                        <View className="flex-row justify-between items-start mb-6">
-                            <View>
-                                <Text className="text-sky-100 font-medium text-xs tracking-widest mb-1">{t('myForward.totalLivesTouched')}</Text>
-                                <Text className="text-4xl font-extrabold text-white">{totalImpact}</Text>
-                            </View>
-                            <View className="bg-white/20 p-2 rounded-full">
-                                <Feather name="globe" size={24} color="white" />
-                            </View>
-                        </View>
+                                <View className="flex-row gap-4">
+                                    <View className="bg-black/10 flex-1 p-3 rounded-xl">
+                                        <Text className="text-sky-50 text-[10px] font-bold">{t('myForward.chainsStarted')}</Text>
+                                        <Text className="text-xl font-bold text-white">{activeChainsCount}</Text>
+                                    </View>
+                                    <View className="bg-black/10 flex-1 p-3 rounded-xl">
+                                        <Text className="text-sky-50 text-[10px] font-bold">{t('myForward.totalGenerations')}</Text>
+                                        <Text className="text-xl font-bold text-white">{totalGenerations}</Text>
+                                    </View>
+                                </View>
+                            </SafeGradient>
 
-                        <View className="flex-row gap-4">
-                            <View className="bg-black/10 flex-1 p-3 rounded-xl">
-                                <Text className="text-sky-50 text-[10px] font-bold">{t('myForward.chainsStarted')}</Text>
-                                <Text className="text-xl font-bold text-white">{activeChainsCount}</Text>
+                            {/* Tabs / Toggle (Ignited vs Invited) */}
+                            <View className="flex-row bg-gray-100 p-1 rounded-xl mb-6">
+                                <TouchableOpacity
+                                    className={`flex-1 py-2 items-center rounded-lg ${activeTab === 'ignited' ? 'bg-white shadow-sm' : ''}`}
+                                    onPress={() => setActiveTab('ignited')}
+                                >
+                                    <Text className={`font-bold ${activeTab === 'ignited' ? 'text-gray-900' : 'text-gray-500'}`}>{t('myForward.tab.ignited')}</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    className={`flex-1 py-2 items-center rounded-lg ${activeTab === 'invited' ? 'bg-white shadow-sm' : ''}`}
+                                    onPress={() => setActiveTab('invited')}
+                                >
+                                    <Text className={`font-bold ${activeTab === 'invited' ? 'text-gray-900' : 'text-gray-500'}`}>{t('myForward.tab.invited')}</Text>
+                                </TouchableOpacity>
                             </View>
-                            <View className="bg-black/10 flex-1 p-3 rounded-xl">
-                                <Text className="text-sky-50 text-[10px] font-bold">{t('myForward.totalGenerations')}</Text>
-                                <Text className="text-xl font-bold text-white">{totalGenerations}</Text>
+
+                            {/* Section Title & Filter */}
+                            <View className="flex-row justify-between items-center mb-4 z-10 relative">
+                                <Text className="text-lg font-bold text-gray-900">{t('myForward.myChains')}</Text>
+                                <TouchableOpacity
+                                    onPress={() => setFilterModalVisible(true)}
+                                    className="flex-row items-center"
+                                >
+                                    <Text className="text-sm font-bold text-sky-500 mr-1">{filter === 'All' ? t('myForward.viewAll') : filterLabel(filter)}</Text>
+                                    <Feather name="chevron-down" size={16} color="#0EA5E9" />
+                                </TouchableOpacity>
                             </View>
-                        </View>
-                    </SafeGradient>
-
-                    {/* Tabs / Toggle (Ignited vs Invited) */}
-                    <View className="flex-row bg-gray-100 p-1 rounded-xl mb-6">
-                        <TouchableOpacity
-                            className={`flex-1 py-2 items-center rounded-lg ${activeTab === 'ignited' ? 'bg-white shadow-sm' : ''}`}
-                            onPress={() => setActiveTab('ignited')}
-                        >
-                            <Text className={`font-bold ${activeTab === 'ignited' ? 'text-gray-900' : 'text-gray-500'}`}>{t('myForward.tab.ignited')}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            className={`flex-1 py-2 items-center rounded-lg ${activeTab === 'invited' ? 'bg-white shadow-sm' : ''}`}
-                            onPress={() => setActiveTab('invited')}
-                        >
-                            <Text className={`font-bold ${activeTab === 'invited' ? 'text-gray-900' : 'text-gray-500'}`}>{t('myForward.tab.invited')}</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Section Title & Filter */}
-                    <View className="flex-row justify-between items-center mb-4 z-10 relative">
-                        <Text className="text-lg font-bold text-gray-900">{t('myForward.myChains')}</Text>
-                        <TouchableOpacity
-                            onPress={() => setFilterModalVisible(true)}
-                            className="flex-row items-center"
-                        >
-                            <Text className="text-sm font-bold text-sky-500 mr-1">{filter === 'All' ? t('myForward.viewAll') : filterLabel(filter)}</Text>
-                            <Feather name="chevron-down" size={16} color="#0EA5E9" />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Chain List */}
-                    {displayedChains.length > 0 ? (
-                        displayedChains.map(chain => (
-                            <View key={chain.id}>
-                                {renderChainCard({ item: chain })}
-                            </View>
-                        ))
-                    ) : (
+                        </>
+                    }
+                    ListEmptyComponent={
                         <View className="items-center justify-center py-10">
                             <Text className="text-gray-400 text-sm">{t('myForward.noChainsFound')}</Text>
                         </View>
-                    )}
-
-                    {/* New Chain CTA (Only in Ignited tab or always? Let's keep it generally visible or only ignited) */}
-                    {activeTab === 'ignited' && filter !== 'Archived' && (
-                        <TouchableOpacity
-                            onPress={() => router.push('/(tabs)/create-forward')}
-                            className="border-2 border-dashed border-gray-200 rounded-2xl p-6 items-center justify-center mt-2"
-                        >
-                            <Feather name="plus-circle" size={32} color="#9CA3AF" />
-                            <Text className="text-gray-400 font-bold mt-2">{t('myForward.startNewChain')}</Text>
-                        </TouchableOpacity>
-                    )}
-
-                    <View className="h-20" />
-                </ScrollView>
+                    }
+                    ListFooterComponent={
+                        <>
+                            {activeTab === 'ignited' && filter !== 'Archived' && (
+                                <TouchableOpacity
+                                    onPress={() => router.push('/(tabs)/create-forward')}
+                                    className="border-2 border-dashed border-gray-200 rounded-2xl p-6 items-center justify-center mt-2"
+                                >
+                                    <Feather name="plus-circle" size={32} color="#9CA3AF" />
+                                    <Text className="text-gray-400 font-bold mt-2">{t('myForward.startNewChain')}</Text>
+                                </TouchableOpacity>
+                            )}
+                            <View className="h-20" />
+                        </>
+                    }
+                />
 
                 {/* Filter Modal */}
                 <Modal

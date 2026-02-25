@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {
+    cancelAnimation,
     Easing,
     useAnimatedStyle,
     useSharedValue,
@@ -33,6 +34,9 @@ const AnimatedGradientBorder: React.FC<AnimatedGradientBorderProps> = ({
             -1, // Infinite loop
             false // No reverse
         );
+        return () => {
+            cancelAnimation(rotation);
+        };
     }, []);
 
     const animatedStyle = useAnimatedStyle(() => {

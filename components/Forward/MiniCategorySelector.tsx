@@ -21,7 +21,7 @@ interface MiniCategorySelectorProps {
     onSelect: (category: CategoryType) => void;
 }
 
-export default function MiniCategorySelector({ selected, onSelect }: MiniCategorySelectorProps) {
+const MiniCategorySelector = React.memo(function MiniCategorySelector({ selected, onSelect }: MiniCategorySelectorProps) {
     const { t } = useI18n();
     const labels: Record<CategoryType, string> = {
         coffee: t('create.category.coffee'),
@@ -72,4 +72,6 @@ export default function MiniCategorySelector({ selected, onSelect }: MiniCategor
             </ScrollView>
         </View>
     );
-}
+});
+
+export default MiniCategorySelector;

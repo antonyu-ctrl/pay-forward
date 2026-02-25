@@ -2,7 +2,8 @@ import AnimatedGradientBorder from '@/components/UI/AnimatedGradientBorder';
 import { Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { FlatList, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useI18n } from '../../lib/i18n';
 
 // Mock Data for Online Users

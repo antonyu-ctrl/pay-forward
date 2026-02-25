@@ -1,5 +1,6 @@
 import React from 'react';
-import { Image, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 
 interface Props {
     posts: string[]
@@ -18,7 +19,7 @@ export default function ProfileContent({ posts }: Props) {
                         <Image
                             source={{ uri: img }}
                             className="w-full h-full bg-gray-100"
-                            resizeMode="cover"
+                            contentFit="cover"
                         />
                     </TouchableOpacity>
                 ))}

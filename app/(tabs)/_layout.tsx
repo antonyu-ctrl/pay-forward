@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router';
 import React from 'react';
 import { useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { DESKTOP_BREAKPOINT } from '../../constants/Layout';
 import { useI18n } from '../../lib/i18n';
 
 
@@ -20,7 +21,7 @@ export default function TabLayout() {
 
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
-  const isDesktop = width >= 768; // 768px is the standard MD breakpoint
+  const isDesktop = width >= DESKTOP_BREAKPOINT;
 
   return (
     <>

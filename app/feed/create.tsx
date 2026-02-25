@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import {
     Dimensions,
     FlatList,
-    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -14,6 +13,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
+import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import SafeGradient from '../../components/SafeGradient';
 import CustomSlider from '../../components/UI/CustomSlider';
@@ -167,7 +167,7 @@ export default function CreateFeedScreen() {
                                 <Image
                                     source={{ uri: img }}
                                     style={[{ width: width, height: width }, filterStyle as any]} // Apply CSS filters here
-                                    resizeMode="cover"
+                                    contentFit="cover"
                                 />
                                 {/* Overlay Filters (for Color Tints) */}
                                 <View
