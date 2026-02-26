@@ -17,9 +17,9 @@ import { useI18n } from '../../lib/i18n';
 
 const CANVAS_SIZE = 800;
 const CENTER = CANVAS_SIZE / 2;
-const MAX_NODE_SIZE = 68;
-const MIN_NODE_SIZE = 20;
-const MAX_DIST = 400;
+const MAX_NODE_SIZE = 100;
+const MIN_NODE_SIZE = 32;
+const MAX_DIST = 350;
 
 export default function NetworkScreen() {
     const router = useRouter();
@@ -96,8 +96,8 @@ export default function NetworkScreen() {
         const dy = screenY - ch / 2;
         const dist = Math.sqrt(dx * dx + dy * dy);
         const ratio = Math.min(dist / MAX_DIST, 1);
-        // Gentle curve for gradual size change across layers
-        const t = Math.pow(ratio, 1.2);
+        // Gradual curve — slightly steeper than linear for visible layer distinction
+        const t = Math.pow(ratio, 0.85);
         return MAX_NODE_SIZE - t * (MAX_NODE_SIZE - MIN_NODE_SIZE);
     }, [transform, cw, ch, canvasLeft, canvasTop]);
 
