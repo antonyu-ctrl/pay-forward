@@ -5,6 +5,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import 'react-native-reanimated';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '../global.css';
 
 import WebTopBar from '@/components/Navigation/WebTopBar';
@@ -57,21 +58,23 @@ function RootLayoutNav() {
 
   return (
     <I18nProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <AppErrorBoundary>
-        {/* WebTopBar — always visible on desktop, all routes */}
-        {isDesktop && <WebTopBar />}
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <AppErrorBoundary>
+          {/* WebTopBar — always visible on desktop, all routes */}
+          {isDesktop && <WebTopBar />}
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
 
-          <Stack.Screen name="feed/create" options={{ headerShown: false }} />
-          <Stack.Screen name="feed/[feedId]" options={{ headerShown: false }} />
-          <Stack.Screen name="chat/[userId]" options={{ headerShown: false }} />
-          <Stack.Screen name="chain/[chainId]" options={{ headerShown: false }} />
-          <Stack.Screen name="chain/network" options={{ headerShown: false }} />
-        </Stack>
-        </AppErrorBoundary>
-      </ThemeProvider>
+            <Stack.Screen name="feed/create" options={{ headerShown: false }} />
+            <Stack.Screen name="feed/[feedId]" options={{ headerShown: false }} />
+            <Stack.Screen name="chat/[userId]" options={{ headerShown: false }} />
+            <Stack.Screen name="chain/[chainId]" options={{ headerShown: false }} />
+            <Stack.Screen name="chain/network" options={{ headerShown: false }} />
+          </Stack>
+          </AppErrorBoundary>
+        </ThemeProvider>
+      </GestureHandlerRootView>
     </I18nProvider>
   );
 }
