@@ -58,7 +58,7 @@ export default function FeedDetailScreen() {
                     <View className="flex-row items-center gap-6">
                         <TouchableOpacity
                             className="flex-row items-center"
-                            onPress={() => router.push({ pathname: '/feed/reply', params: { feedId: feed.id, username: feed.username } })}
+                            onPress={() => router.push({ pathname: '/feed/create', params: { feedId: feed.id, username: feed.username } })}
                         >
                             <Feather name="message-circle" size={18} color="#6B7280" />
                             <Text className="text-gray-500 text-xs ml-1.5">{replies.length}</Text>
@@ -136,7 +136,7 @@ export default function FeedDetailScreen() {
                 {/* Custom Header — uses same px-4 as content for aligned margins */}
                 <View className="flex-row items-center px-4 py-3 border-b border-gray-100 bg-white">
                     <TouchableOpacity onPress={() => router.back()} className="mr-3">
-                        <Feather name="arrow-left" size={22} color="#111827" />
+                        <Feather name="arrow-left" size={24} color="#111827" />
                     </TouchableOpacity>
                     <Text className="text-lg font-bold text-gray-900">Post</Text>
                 </View>

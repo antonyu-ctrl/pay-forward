@@ -26,7 +26,7 @@ export default function UserProfileHeader({ username, returnTo }: Props) {
             {/* Left: Back Button */}
             <View className="w-8">
                 <TouchableOpacity onPress={handleGoBack}>
-                    <Feather name="arrow-left" size={24} color="black" />
+                    <Feather name="arrow-left" size={24} color="#111827" />
                 </TouchableOpacity>
             </View>
 

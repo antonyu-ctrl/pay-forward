@@ -122,7 +122,7 @@ export default function InboxScreen() {
                     onPress={() => router.push({ pathname: '/chat/[userId]', params: { userId: user.username } })}
                 >
                     <View className="relative">
-                        {user.hasActiveChain ? (
+                        {user.hasActiveChain && activeTab === 'chain' ? (
                             <AnimatedGradientBorder
                                 size={60}
                                 borderWidth={2.5}
@@ -175,7 +175,11 @@ export default function InboxScreen() {
                     <View className="mb-6">
                         <Text className="text-gray-900 font-bold text-lg mb-3">New Chains</Text>
                         {unreadChains.map((item) => (
-                            <TouchableOpacity key={item.id} className="bg-white border border-gray-100 rounded-2xl p-4 mb-3 shadow-sm active:bg-gray-50">
+                            <TouchableOpacity
+                                key={item.id}
+                                className="bg-white border border-gray-100 rounded-2xl p-4 mb-3 shadow-sm active:bg-gray-50"
+                                onPress={() => router.push({ pathname: '/chain/[chainId]', params: { chainId: item.id, senderMessage: item.message } } as any)}
+                            >
                                 <View className="flex-row items-start">
                                     <Image
                                         source={{ uri: item.avatarUrl }}
@@ -212,7 +216,11 @@ export default function InboxScreen() {
                     <View className="mb-8">
                         <Text className="text-gray-900 font-bold text-lg mb-3">History</Text>
                         {historyChains.map((item) => (
-                            <TouchableOpacity key={item.id} className="flex-row items-center px-4 py-3 active:bg-gray-50">
+                            <TouchableOpacity
+                                key={item.id}
+                                className="flex-row items-center px-4 py-3 active:bg-gray-50"
+                                onPress={() => router.push({ pathname: '/chain/[chainId]', params: { chainId: item.id, senderMessage: item.message } } as any)}
+                            >
                                 <View className="relative">
                                     <Image
                                         source={{ uri: item.avatarUrl }}

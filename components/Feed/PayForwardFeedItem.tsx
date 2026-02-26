@@ -54,7 +54,7 @@ const PayForwardFeedItem: React.FC<FeedItemProps> = React.memo(({
 
     // Navigate to reply page (to write a reply)
     const handlePressReply = () => {
-        router.push({ pathname: '/feed/reply', params: { feedId: id ?? '', username } });
+        router.push({ pathname: '/feed/create', params: { feedId: id ?? '', username } });
     };
 
     return (

@@ -24,7 +24,7 @@ const ForwardBar = React.memo(() => {
                 {/* Start Forwarding Button — same height alignment as avatars */}
                 <TouchableOpacity
                     className="items-center mr-4"
-                    onPress={() => router.push('/create-forward')}
+                    onPress={() => router.push({ pathname: '/create-forward', params: { from: '/' } })}
                 >
                     <View className="mb-1">
                         <View className="w-[68px] h-[68px] rounded-full border-2 border-dashed border-sky-500 items-center justify-center bg-sky-50">

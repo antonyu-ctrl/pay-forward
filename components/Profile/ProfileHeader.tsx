@@ -14,7 +14,7 @@ export default function ProfileHeader({ username }: Props) {
         <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-100 z-20">
             {/* Left Box (Placeholder for alignment or specific action) */}
             <View className="w-8">
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/feed/create')}>
                     <Feather name="plus-square" size={24} color="black" />
                 </TouchableOpacity>
             </View>

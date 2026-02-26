@@ -1,25 +1,42 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React from 'react';
-import { FlatList, Platform, Text, View } from 'react-native';
+import { FlatList, Platform, Text, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { DESKTOP_BREAKPOINT } from '../../constants/Layout';
 import { HOME_FEED_DATA } from '../../data/mockFeeds';
 import ForwardBar from './ForwardBar';
 import PayForwardFeedItem from './PayForwardFeedItem';
 
 const HomeFeed = () => {
+    const { width } = useWindowDimensions();
+    const isDesktop = width >= DESKTOP_BREAKPOINT;
+    const router = useRouter();
+
     return (
         <View
             className="flex-1 bg-gray-50 items-center"
             style={Platform.OS === 'web' ? { height: '100vh' as any } : { flex: 1 }}
         >
             <View className="w-full max-w-md flex-1 bg-white shadow-sm overflow-hidden">
-                {/* Mobile Header - Centered Logo */}
-                <View className="items-center justify-center py-3 border-b border-gray-100 bg-white z-20">
+                {/* Header - Logo + Compose (desktop) */}
+                <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-100 bg-white z-20">
+                    <View className="w-10" />
                     <View className="flex-row items-center">
                         <View className="w-7 h-7 bg-sky-500 rounded-lg items-center justify-center mr-2">
                             <Ionicons name="heart" size={16} color="white" />
                         </View>
                         <Text className="text-lg font-bold text-gray-900 tracking-tight">PayForward</Text>
                     </View>
+                    {isDesktop ? (
+                        <TouchableOpacity
+                            onPress={() => router.push('/feed/create')}
+                            activeOpacity={0.7}
+                        >
+                            <Feather name="plus-square" size={24} color="#111827" />
+                        </TouchableOpacity>
+                    ) : (
+                        <View className="w-10" />
+                    )}
                 </View>
 
                 <View className="bg-white z-10">

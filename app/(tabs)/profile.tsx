@@ -118,23 +118,9 @@ const THREAD_POSTS = [
   },
 ];
 
-// Mock Following Feed Data — ID 7 (synced with feed/[feedId].tsx ALL_FEEDS)
-const FOLLOWING_POSTS = [
-  {
-    id: '7',
-    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80',
-    username: 'Emma_W',
-    timeAgo: '1h',
-    forwardedTo: 'Local Animal Shelter',
-    caption: 'Spent the morning walking dogs. They are all so sweet and need homes! \ud83d\udc36\u2764\ufe0f',
-    mainImageUrl: 'https://images.unsplash.com/photo-1544027993-37dbfe43562a?w=500&q=80',
-    likesCount: 112,
-    replies: [],
-  },
-];
 
 export default function ProfileScreen() {
-  const [activeTab, setActiveTab] = useState<'Post' | 'Following' | 'Media'>('Post');
+  const [activeTab, setActiveTab] = useState<'Post' | 'Media'>('Post');
 
   return (
     <View
@@ -177,25 +163,6 @@ export default function ProfileScreen() {
                     replies={post.replies}
                     defaultShowReplies={true}
                     showMyRepliesInline={true}
-                  />
-                ))}
-              </View>
-            )}
-
-            {activeTab === 'Following' && (
-              <View className="flex-1 bg-white">
-                {FOLLOWING_POSTS.map((post) => (
-                  <PayForwardFeedItem
-                    key={post.id}
-                    id={post.id}
-                    avatarUrl={post.avatarUrl}
-                    username={post.username}
-                    timeAgo={post.timeAgo}
-                    mainImageUrl={post.mainImageUrl}
-                    forwardedTo={post.forwardedTo}
-                    caption={post.caption}
-                    likesCount={post.likesCount}
-                    replies={post.replies}
                   />
                 ))}
               </View>

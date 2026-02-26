@@ -155,6 +155,7 @@ export default function MyForwardScreen() {
     const renderChainCard = useCallback(({ item }: { item: ChainItem }) => (
         <TouchableOpacity
             activeOpacity={0.9}
+            onPress={() => router.push({ pathname: '/chain/[chainId]', params: { chainId: item.id } } as any)}
             className="bg-white mb-4 rounded-2xl p-4 border border-gray-100 shadow-sm relative"
         >
 
@@ -238,7 +239,7 @@ export default function MyForwardScreen() {
                 </TouchableOpacity>
             )}
         </TouchableOpacity>
-    ), [t, toggleArchive]);
+    ), [t, toggleArchive, router]);
 
     return (
         <View
@@ -270,9 +271,13 @@ export default function MyForwardScreen() {
                                         <Text className="text-sky-100 font-medium text-xs tracking-widest mb-1">{t('myForward.totalLivesTouched')}</Text>
                                         <Text className="text-4xl font-extrabold text-white">{totalImpact}</Text>
                                     </View>
-                                    <View className="bg-white/20 p-2 rounded-full">
+                                    <TouchableOpacity
+                                        className="bg-white/20 p-2 rounded-full"
+                                        onPress={() => router.push('/chain/network')}
+                                        activeOpacity={0.7}
+                                    >
                                         <Feather name="globe" size={24} color="white" />
-                                    </View>
+                                    </TouchableOpacity>
                                 </View>
 
                                 <View className="flex-row gap-4">
@@ -325,7 +330,7 @@ export default function MyForwardScreen() {
                         <>
                             {activeTab === 'ignited' && filter !== 'Archived' && (
                                 <TouchableOpacity
-                                    onPress={() => router.push('/(tabs)/create-forward')}
+                                    onPress={() => router.push({ pathname: '/(tabs)/create-forward', params: { from: '/my-forward' } })}
                                     className="border-2 border-dashed border-gray-200 rounded-2xl p-6 items-center justify-center mt-2"
                                 >
                                     <Feather name="plus-circle" size={32} color="#9CA3AF" />
