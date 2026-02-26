@@ -111,14 +111,22 @@ type I18nKey =
     | 'myForward.othersJoinedWave'
     | 'common.cancel'
     | 'common.completed'
-    | 'common.people';
+    | 'common.people'
+    | 'chain.history'
+    | 'chain.filter'
+    | 'chain.responseNeeded'
+    | 'chain.payForwardResponse'
+    | 'chain.forwardedMessage'
+    | 'chain.react'
+    | 'chain.completed'
+    | 'network.title';
 
 const translations: Record<Language, Record<I18nKey, string>> = {
     en: {
         'app.name': 'PayForward',
         'nav.home': 'Home',
         'nav.myForward': 'My Forward',
-        'nav.inbox': 'Inbox',
+        'nav.inbox': 'Message',
         'nav.search': 'Search',
         'nav.profile': 'Profile',
         'nav.newChain': 'New Chain',
@@ -135,7 +143,7 @@ const translations: Record<Language, Record<I18nKey, string>> = {
         'profile.tab.post': 'Post',
         'profile.tab.following': 'Following',
         'profile.tab.media': 'Media',
-        'profile.impactSuffix': "'s Impact",
+        'profile.impactSuffix': "'s Forward",
         'settings.title': 'User Setting',
         'settings.section.account': 'Account',
         'settings.section.privacy': 'Privacy',
@@ -172,7 +180,7 @@ const translations: Record<Language, Record<I18nKey, string>> = {
         'inbox.hoursLeft': 'h left',
         'inbox.joined': 'joined',
         'inbox.completed': 'completed',
-        'myForward.title': 'My Impact',
+        'myForward.title': 'My Forward',
         'myForward.totalLivesTouched': 'TOTAL LIVES TOUCHED',
         'myForward.chainsStarted': 'CHAINS STARTED',
         'myForward.totalGenerations': 'TOTAL GENERATIONS',
@@ -225,12 +233,20 @@ const translations: Record<Language, Record<I18nKey, string>> = {
         'common.cancel': 'Cancel',
         'common.completed': 'Completed',
         'common.people': 'people',
+        'chain.history': 'Forward Detail',
+        'chain.filter': 'Filter',
+        'chain.responseNeeded': 'RESPONSE NEEDED',
+        'chain.payForwardResponse': 'PAY-FORWARD RESPONSE',
+        'chain.forwardedMessage': 'Forwarded Message',
+        'chain.react': 'React',
+        'chain.completed': 'COMPLETED',
+        'network.title': 'My Forwarding Network',
     },
     ko: {
         'app.name': '페이포워드',
         'nav.home': '홈',
         'nav.myForward': '내 포워드',
-        'nav.inbox': '인박스',
+        'nav.inbox': '메세지',
         'nav.search': '검색',
         'nav.profile': '프로필',
         'nav.newChain': '새 체인',
@@ -247,7 +263,7 @@ const translations: Record<Language, Record<I18nKey, string>> = {
         'profile.tab.post': '게시물',
         'profile.tab.following': '팔로잉',
         'profile.tab.media': '미디어',
-        'profile.impactSuffix': '님의 임팩트',
+        'profile.impactSuffix': '의 포워드',
         'settings.title': '사용자 설정',
         'settings.section.account': '계정',
         'settings.section.privacy': '개인정보',
@@ -284,7 +300,7 @@ const translations: Record<Language, Record<I18nKey, string>> = {
         'inbox.hoursLeft': '시간 남음',
         'inbox.joined': '참여',
         'inbox.completed': '완료',
-        'myForward.title': '내 임팩트',
+        'myForward.title': '나의 포워드',
         'myForward.totalLivesTouched': '총 영향 받은 사람',
         'myForward.chainsStarted': '시작한 체인',
         'myForward.totalGenerations': '총 세대 수',
@@ -337,6 +353,14 @@ const translations: Record<Language, Record<I18nKey, string>> = {
         'common.cancel': '취소',
         'common.completed': '완료',
         'common.people': '명',
+        'chain.history': '포워드 상세',
+        'chain.filter': '필터',
+        'chain.responseNeeded': '응답 필요',
+        'chain.payForwardResponse': '페이포워드 응답',
+        'chain.forwardedMessage': '전달된 메시지',
+        'chain.react': '리액트',
+        'chain.completed': '완료됨',
+        'network.title': '나의 포워드 네트워크',
     },
 };
 

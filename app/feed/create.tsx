@@ -1,355 +1,529 @@
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
     Dimensions,
-    FlatList,
     KeyboardAvoidingView,
+    PanResponder,
     Platform,
     ScrollView,
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    useWindowDimensions,
+    View,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import SafeGradient from '../../components/SafeGradient';
 import CustomSlider from '../../components/UI/CustomSlider';
 
-const { width } = Dimensions.get('window');
+const screenWidth = Dimensions.get('window').width;
 
-type Step = 'PICKER' | 'EDITOR' | 'POST';
+type ScreenMode = 'COMPOSE' | 'EDITOR';
+type EditorTab = 'FILTERS' | 'ADJUST';
 
-export default function CreateFeedScreen() {
+// Per-image filter settings
+interface ImageFilterState {
+    filter: string;       // 'Normal' | 'Warm' | 'Cool' | 'Vintage' | 'B&W'
+    brightness: number;
+    contrast: number;
+    saturation: number;
+}
+
+const DEFAULT_FILTER: ImageFilterState = {
+    filter: 'Normal',
+    brightness: 1,
+    contrast: 1,
+    saturation: 1,
+};
+
+// TODO [PRODUCTION]: Replace state-based CSS filters with expo-image-manipulator
+// to apply actual image transformations before upload.
+// Current approach: filter values stored per image, applied as CSS filters (web)
+// and as overlay tints. On production, call ImageManipulator.manipulateAsync()
+// in handlePost() to create processed image URIs before sending to API.
+
+export default function ComposeScreen() {
+    // If feedId/username are present → Reply mode; otherwise → Post mode
+    const { feedId, username } = useLocalSearchParams<{ feedId?: string; username?: string }>();
+    const isReplyMode = !!(feedId && username);
+
     const router = useRouter();
-    const params = useLocalSearchParams();
-    const isNewChain = params.origin === 'new_chain';
-    const lockedRecipients = params.recipients ? JSON.parse(params.recipients as string) : [];
-
-    const [step, setStep] = useState<Step>('PICKER');
+    const [postText, setPostText] = useState('');
     const [images, setImages] = useState<string[]>([]);
-    const [caption, setCaption] = useState('');
+    const [imageFilters, setImageFilters] = useState<ImageFilterState[]>([]);
+    const inputRef = useRef<TextInput>(null);
+    const { width } = useWindowDimensions();
+    const isNarrow = width < 768;
+    const contentWidth = Math.min(width, 448);
 
-    // Editor State (Mock Filters)
-    const [selectedFilter, setSelectedFilter] = useState('Normal');
+    // Current user mock
+    const currentUserAvatar = 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80';
 
-    // Step 1: Pick Images
+    // ── Screen mode ──
+    const [mode, setMode] = useState<ScreenMode>('COMPOSE');
+    const [editingIndex, setEditingIndex] = useState(0);
+
+    // ── Temporary editor state (working copy while editing) ──
+    const [editorTab, setEditorTab] = useState<EditorTab>('FILTERS');
+    const [tempFilter, setTempFilter] = useState<ImageFilterState>(DEFAULT_FILTER);
+
+    // ── Zoom / Pan state for editor ──
+    const [zoomScale, setZoomScale] = useState(1);
+    const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+    const panRef = useRef({ x: 0, y: 0 });       // live value for PanResponder closure
+    const panStart = useRef({ x: 0, y: 0 });
+
+    const editorPanResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => true,
+            onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dx) > 2 || Math.abs(gs.dy) > 2,
+            onPanResponderGrant: () => {
+                panStart.current = { ...panRef.current };
+            },
+            onPanResponderMove: (_, gs) => {
+                const next = {
+                    x: panStart.current.x + gs.dx,
+                    y: panStart.current.y + gs.dy,
+                };
+                panRef.current = next;
+                setPanOffset(next);
+            },
+        })
+    ).current;
+
+    const handleZoomWheel = useCallback((e: any) => {
+        e.preventDefault();
+        const delta = e.deltaY > 0 ? -0.1 : 0.1;
+        setZoomScale(prev => Math.min(Math.max(prev + delta, 0.5), 4));
+    }, []);
+
+    const resetZoom = () => {
+        setZoomScale(1);
+        setPanOffset({ x: 0, y: 0 });
+        panRef.current = { x: 0, y: 0 };
+    };
+
+    const handlePost = () => {
+        // TODO [PRODUCTION]: Apply imageFilters[i] to each image via ImageManipulator
+        // before uploading. For now, filters are visual-only (CSS).
+        if (isReplyMode) {
+            console.log('Posting reply:', postText, 'images:', images, 'filters:', imageFilters, 'to feed:', feedId);
+        } else {
+            console.log('Posting:', postText, 'images:', images, 'filters:', imageFilters);
+        }
+        router.back();
+    };
+
+    const hasContent = postText.trim() || images.length > 0;
+
     const pickImages = async () => {
-        // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
             allowsMultipleSelection: true,
-            selectionLimit: 5,
+            selectionLimit: 4,
             quality: 0.8,
         });
 
         if (!result.canceled) {
             const uris = result.assets.map(asset => asset.uri);
-            setImages([...images, ...uris]);
+            const newImages = [...images, ...uris].slice(0, 4);
+            setImages(newImages);
+            // Initialize filters for new images
+            const newFilters = [...imageFilters];
+            while (newFilters.length < newImages.length) {
+                newFilters.push({ ...DEFAULT_FILTER });
+            }
+            setImageFilters(newFilters);
         }
     };
 
     const removeImage = (index: number) => {
-        const newImages = images.filter((_, i) => i !== index);
-        setImages(newImages);
+        setImages(prev => prev.filter((_, i) => i !== index));
+        setImageFilters(prev => prev.filter((_, i) => i !== index));
     };
 
-    // Navigation Handlers
-    const handleNext = () => {
-        if (step === 'PICKER') setStep('EDITOR');
-        else if (step === 'EDITOR') setStep('POST');
-        else handlePost();
+    // ── Editor helpers ──
+    const openEditor = (index: number) => {
+        setEditingIndex(index);
+        // Load existing filter for this image into temp editor state
+        const existing = imageFilters[index] ?? DEFAULT_FILTER;
+        setTempFilter({ ...existing });
+        setEditorTab('FILTERS');
+        // Reset zoom/pan when entering editor
+        setZoomScale(1);
+        setPanOffset({ x: 0, y: 0 });
+        panRef.current = { x: 0, y: 0 };
+        setMode('EDITOR');
     };
 
-    const handleBack = () => {
-        if (step === 'POST') setStep('EDITOR');
-        else if (step === 'EDITOR') setStep('PICKER');
-        else router.back();
+    const applyFilterPreset = (filterName: string) => {
+        let newState: ImageFilterState;
+        switch (filterName) {
+            case 'B&W':
+                newState = { filter: filterName, brightness: 1, contrast: 1.2, saturation: 0 };
+                break;
+            case 'Vintage':
+                newState = { filter: filterName, brightness: 1.1, contrast: 0.9, saturation: 0.6 };
+                break;
+            case 'Warm':
+                newState = { filter: filterName, brightness: 1, contrast: 1, saturation: 1 };
+                break;
+            case 'Cool':
+                newState = { filter: filterName, brightness: 1, contrast: 1, saturation: 1 };
+                break;
+            default: // Normal
+                newState = { filter: 'Normal', brightness: 1, contrast: 1, saturation: 1 };
+                break;
+        }
+        setTempFilter(newState);
     };
 
-    const handlePost = () => {
-        // Post logic here
-        router.push('/(tabs)'); // Go back home after posting
+    const handleEditorDone = () => {
+        // Save temp filter back to imageFilters array
+        const updated = [...imageFilters];
+        updated[editingIndex] = { ...tempFilter };
+        setImageFilters(updated);
+        setMode('COMPOSE');
     };
 
-    // Render Steps
-    const renderPicker = () => (
-        <View className="flex-1">
-            <View className="flex-1 items-center justify-center bg-gray-50 m-4 rounded-xl border-dashed border-2 border-gray-300">
-                {images.length === 0 ? (
-                    <TouchableOpacity onPress={pickImages} className="items-center">
-                        <Feather name="image" size={48} color="#9CA3AF" />
-                        <Text className="text-gray-400 mt-4 font-medium">Select photos from gallery</Text>
-                        <Text className="text-gray-400 text-xs mt-1">(Up to 5 photos)</Text>
-                    </TouchableOpacity>
-                ) : (
-                    <View className="flex-1 w-full p-2">
-                        <FlatList
-                            data={images}
-                            keyExtractor={(_, i) => i.toString()}
-                            numColumns={2}
-                            renderItem={({ item, index }) => (
-                                <View className="flex-1 m-1 relative aspect-square">
-                                    <Image source={{ uri: item }} className="w-full h-full rounded-lg" />
-                                    <TouchableOpacity
-                                        onPress={() => removeImage(index)}
-                                        className="absolute top-1 right-1 bg-black/50 p-1 rounded-full"
-                                    >
-                                        <Feather name="x" size={16} color="white" />
-                                    </TouchableOpacity>
-                                </View>
-                            )}
-                        />
-                        <TouchableOpacity onPress={pickImages} className="py-3 items-center">
-                            <Text className="text-sky-500 font-bold">+ Add More</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-            </View>
+    // ── Build CSS filter style for a given filter state ──
+    const buildFilterStyle = (fs: ImageFilterState) => {
+        if (Platform.OS !== 'web') return {};
+        return {
+            filter: `brightness(${fs.brightness}) contrast(${fs.contrast}) saturate(${fs.saturation})`,
+        };
+    };
 
-            {/* Text Only Mode Hint */}
-            {images.length === 0 && (
-                <View className="px-6 pb-6">
-                    <TouchableOpacity
-                        onPress={() => setStep('POST')} // Skip Editor for text-only
-                        className="bg-gray-800 py-4 rounded-xl items-center"
-                    >
-                        <Text className="text-white font-bold">Write Text Only Post</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
-        </View>
-    );
-
-    // Editor State
-    const [editorTab, setEditorTab] = useState<'FILTERS' | 'ADJUST'>('FILTERS');
-
-    // Adjustments
-    const [brightness, setBrightness] = useState(1);
-    const [contrast, setContrast] = useState(1);
-    const [saturation, setSaturation] = useState(1);
-
-    // Filters Logic
-    const applyFilter = (filter: string) => {
-        setSelectedFilter(filter);
-        // Reset adjustments when changing filters (optional, but cleaner)
-        if (filter === 'B&W') {
-            setSaturation(0);
-            setContrast(1.2);
-            setBrightness(1);
-        } else if (filter === 'Vintage') {
-            setSaturation(0.6);
-            setContrast(0.9);
-            setBrightness(1.1); // Warm effect simulated via sepia overlay + brightness? CSS sepia is better but sticking to basics
-        } else {
-            // Reset to defaults
-            setSaturation(1);
-            setContrast(1);
-            setBrightness(1);
+    const getOverlayClass = (filterName: string) => {
+        switch (filterName) {
+            case 'Warm': return 'bg-orange-500/10';
+            case 'Cool': return 'bg-blue-500/10';
+            case 'Vintage': return 'bg-yellow-900/10';
+            default: return 'bg-transparent';
         }
     };
 
-    const renderEditor = () => {
-        // Generate CSS Filter String for Web
-        const filterStyle = Platform.OS === 'web' ? {
-            filter: `brightness(${brightness}) contrast(${contrast}) saturate(${saturation})`
-        } : {};
+    // ── EDITOR MODE ──
+    if (mode === 'EDITOR' && images[editingIndex]) {
+        const editingImage = images[editingIndex];
+        const editorFilterStyle = buildFilterStyle(tempFilter);
 
         return (
-            <View className="flex-1 bg-black">
-                {/* Main Image View */}
-                <View className="flex-1 justify-center relative">
-                    <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}>
-                        {images.map((img, index) => (
-                            <View key={index} style={{ width }} className="items-center justify-center relative">
+            <View
+                className="flex-1 bg-gray-50 items-center"
+                style={Platform.OS === 'web' ? { height: '100vh' as any } : { flex: 1 }}
+            >
+                <View className="w-full max-w-md flex-1 bg-white shadow-sm overflow-hidden">
+                    <Stack.Screen options={{ headerShown: false }} />
+
+                    {/* Editor Header — Light theme */}
+                    <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-100">
+                        <TouchableOpacity onPress={() => setMode('COMPOSE')} className="flex-row items-center">
+                            <Feather name="arrow-left" size={24} color="#111827" />
+                            <Text className="text-gray-900 text-sm ml-1">Back</Text>
+                        </TouchableOpacity>
+                        <Text className="text-gray-900 text-base font-bold">Edit Photo</Text>
+                        <TouchableOpacity onPress={handleEditorDone} className="bg-sky-500 px-4 py-1.5 rounded-full">
+                            <Text className="text-white font-bold text-sm">Done</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Image Preview — Zoomable / Pannable */}
+                    <View
+                        className="flex-1 justify-center items-center bg-gray-50"
+                        // @ts-ignore — web-only wheel event
+                        onWheel={Platform.OS === 'web' ? handleZoomWheel : undefined}
+                    >
+                        <View
+                            className="relative rounded-2xl overflow-hidden shadow-sm bg-white"
+                            style={{ width: contentWidth - 32, height: (contentWidth - 32) * 0.85 }}
+                        >
+                            <View
+                                {...editorPanResponder.panHandlers}
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    overflow: 'hidden',
+                                }}
+                            >
                                 <Image
-                                    source={{ uri: img }}
-                                    style={[{ width: width, height: width }, filterStyle as any]} // Apply CSS filters here
-                                    contentFit="cover"
+                                    source={{ uri: editingImage }}
+                                    style={[
+                                        {
+                                            width: (contentWidth - 32) * zoomScale,
+                                            height: (contentWidth - 32) * 0.85 * zoomScale,
+                                            transform: [
+                                                { translateX: panOffset.x },
+                                                { translateY: panOffset.y },
+                                            ],
+                                        },
+                                        editorFilterStyle as any,
+                                    ]}
+                                    contentFit="contain"
                                 />
-                                {/* Overlay Filters (for Color Tints) */}
                                 <View
-                                    className={`absolute inset-0 pointer-events-none ${selectedFilter === 'Warm' ? 'bg-orange-500/10' :
-                                        selectedFilter === 'Cool' ? 'bg-blue-500/10' :
-                                            selectedFilter === 'Vintage' ? 'bg-yellow-900/10' : // Sepia-ish tint
-                                                'bg-transparent'
-                                        }`}
+                                    className={`absolute inset-0 pointer-events-none ${getOverlayClass(tempFilter.filter)}`}
                                 />
                             </View>
-                        ))}
-                    </ScrollView>
-                    <View className="absolute bottom-4 w-full flex-row justify-center gap-1">
-                        {images.map((_, i) => (
-                            <View key={i} className="w-2 h-2 rounded-full bg-white/50" />
-                        ))}
-                    </View>
-                </View>
-
-                {/* Editor Controls */}
-                <View className="bg-gray-900 pb-10 pt-4 rounded-t-3xl border-t border-gray-800">
-
-                    {/* Tab Switcher */}
-                    <View className="flex-row justify-center mb-6 border-b border-gray-800 pb-2">
-                        <TouchableOpacity
-                            onPress={() => setEditorTab('FILTERS')}
-                            className={`px-6 py-2 mx-1 rounded-full ${editorTab === 'FILTERS' ? 'bg-gray-800' : 'bg-transparent'}`}
-                        >
-                            <Text className={`text-xs font-bold ${editorTab === 'FILTERS' ? 'text-white' : 'text-gray-500'}`}>FILTERS</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => setEditorTab('ADJUST')}
-                            className={`px-6 py-2 mx-1 rounded-full ${editorTab === 'ADJUST' ? 'bg-gray-800' : 'bg-transparent'}`}
-                        >
-                            <Text className={`text-xs font-bold ${editorTab === 'ADJUST' ? 'text-white' : 'text-gray-500'}`}>ADJUST</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {editorTab === 'FILTERS' ? (
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, flexGrow: 1, justifyContent: 'space-evenly' }}>
-                            {['Normal', 'Warm', 'Cool', 'Vintage', 'B&W'].map((filter) => {
-                                let iconName = 'aperture';
-                                if (filter === 'Warm') iconName = 'sun';
-                                if (filter === 'Cool') iconName = 'wind';
-                                if (filter === 'Vintage') iconName = 'coffee';
-                                if (filter === 'B&W') iconName = 'moon';
-
-                                return (
-                                    <TouchableOpacity
-                                        key={filter}
-                                        onPress={() => applyFilter(filter)}
-                                        className="items-center"
-                                    >
-                                        <View className={`w-16 h-16 rounded-full items-center justify-center mb-2 border-2 ${selectedFilter === filter ? 'border-sky-500 bg-gray-800' : 'border-gray-700 bg-gray-800'}`}>
-                                            <Feather name={iconName as any} size={24} color={selectedFilter === filter ? '#0EA5E9' : '#9CA3AF'} />
-                                        </View>
-                                        <Text className={`text-xs ${selectedFilter === filter ? 'text-sky-500 font-bold' : 'text-gray-400'}`}>
-                                            {filter}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </ScrollView>
-                    ) : (
-                        <View className="px-8">
-                            <CustomSlider
-                                label="Brightness"
-                                icon="sun"
-                                value={brightness}
-                                min={0.5}
-                                max={2}
-                                onChange={setBrightness}
-                            />
-                            <CustomSlider
-                                label="Contrast"
-                                icon="sliders"
-                                value={contrast}
-                                min={0.5}
-                                max={2}
-                                onChange={setContrast}
-                            />
-                            <CustomSlider
-                                label="Saturation"
-                                icon="droplet"
-                                value={saturation}
-                                min={0}
-                                max={2}
-                                onChange={setSaturation}
-                            />
                         </View>
-                    )}
+
+                        {/* Zoom Controls */}
+                        <View className="flex-row items-center mt-3" style={{ gap: 12 }}>
+                            <TouchableOpacity
+                                onPress={() => setZoomScale(prev => Math.max(prev - 0.25, 0.5))}
+                                className="w-8 h-8 rounded-full bg-white border border-gray-200 items-center justify-center shadow-sm"
+                            >
+                                <Feather name="minus" size={16} color="#374151" />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={resetZoom}>
+                                <Text className="text-gray-500 text-xs font-bold min-w-[40px] text-center">
+                                    {Math.round(zoomScale * 100)}%
+                                </Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setZoomScale(prev => Math.min(prev + 0.25, 4))}
+                                className="w-8 h-8 rounded-full bg-white border border-gray-200 items-center justify-center shadow-sm"
+                            >
+                                <Feather name="plus" size={16} color="#374151" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {/* Editor Controls — Light theme */}
+                    <View className="bg-white pb-8 pt-4 rounded-t-3xl border-t border-gray-100">
+                        {/* Tab Switcher */}
+                        <View className="flex-row justify-center mb-5 mx-6">
+                            <View className="flex-row bg-gray-100 rounded-full p-1">
+                                <TouchableOpacity
+                                    onPress={() => setEditorTab('FILTERS')}
+                                    className={`px-6 py-2 rounded-full ${editorTab === 'FILTERS' ? 'bg-white shadow-sm' : 'bg-transparent'}`}
+                                >
+                                    <Text className={`text-xs font-bold ${editorTab === 'FILTERS' ? 'text-gray-900' : 'text-gray-400'}`}>FILTERS</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    onPress={() => setEditorTab('ADJUST')}
+                                    className={`px-6 py-2 rounded-full ${editorTab === 'ADJUST' ? 'bg-white shadow-sm' : 'bg-transparent'}`}
+                                >
+                                    <Text className={`text-xs font-bold ${editorTab === 'ADJUST' ? 'text-gray-900' : 'text-gray-400'}`}>ADJUST</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        {editorTab === 'FILTERS' ? (
+                            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, flexGrow: 1, justifyContent: 'space-evenly' }}>
+                                {['Normal', 'Warm', 'Cool', 'Vintage', 'B&W'].map((filter) => {
+                                    let iconName = 'aperture';
+                                    if (filter === 'Warm') iconName = 'sun';
+                                    if (filter === 'Cool') iconName = 'wind';
+                                    if (filter === 'Vintage') iconName = 'coffee';
+                                    if (filter === 'B&W') iconName = 'moon';
+                                    const isSelected = tempFilter.filter === filter;
+
+                                    return (
+                                        <TouchableOpacity
+                                            key={filter}
+                                            onPress={() => applyFilterPreset(filter)}
+                                            className="items-center"
+                                        >
+                                            <View className={`w-16 h-16 rounded-2xl items-center justify-center mb-2 border-2 ${isSelected ? 'border-sky-500 bg-sky-50' : 'border-gray-200 bg-gray-50'}`}>
+                                                <Feather name={iconName as any} size={22} color={isSelected ? '#0EA5E9' : '#6B7280'} />
+                                            </View>
+                                            <Text className={`text-xs ${isSelected ? 'text-sky-600 font-bold' : 'text-gray-500'}`}>
+                                                {filter}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </ScrollView>
+                        ) : (
+                            <View className="px-8">
+                                <CustomSlider
+                                    label="Brightness" icon="sun"
+                                    value={tempFilter.brightness} min={0.5} max={2}
+                                    onChange={(v) => setTempFilter(prev => ({ ...prev, brightness: v }))}
+                                />
+                                <CustomSlider
+                                    label="Contrast" icon="sliders"
+                                    value={tempFilter.contrast} min={0.5} max={2}
+                                    onChange={(v) => setTempFilter(prev => ({ ...prev, contrast: v }))}
+                                />
+                                <CustomSlider
+                                    label="Saturation" icon="droplet"
+                                    value={tempFilter.saturation} min={0} max={2}
+                                    onChange={(v) => setTempFilter(prev => ({ ...prev, saturation: v }))}
+                                />
+                            </View>
+                        )}
+                    </View>
                 </View>
             </View>
         );
-    };
+    }
 
-    const renderPost = () => (
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="flex-1">
-            <ScrollView className="flex-1 p-4">
-                <View className="flex-row gap-4 mb-6">
-                    {images.length > 0 ? (
-                        <Image source={{ uri: images[0] }} className="w-20 h-20 rounded-lg bg-gray-200" />
-                    ) : (
-                        <SafeGradient
-                            colors={['#6366f1', '#a855f7']} // indigo-500 to purple-500
-                            className="w-20 h-20 rounded-lg items-center justify-center"
-                        >
-                            <Feather name="type" size={24} color="white" />
-                        </SafeGradient>
-                    )}
-                    <TextInput
-                        className="flex-1 text-base text-gray-800 pt-2"
-                        placeholder="Write a caption..."
-                        multiline
-                        numberOfLines={4}
-                        textAlignVertical="top"
-                        value={caption}
-                        onChangeText={setCaption}
-                    />
-                </View>
-
-                <View className="border-t border-gray-100 py-4">
-                    <TouchableOpacity className="flex-row items-center justify-between py-3">
-                        <Text className="text-base text-gray-900">Tag People</Text>
-                        <View className="flex-row items-center">
-                            {isNewChain ? (
-                                <View className="flex-row items-center bg-gray-100 px-3 py-1 rounded-full">
-                                    <Feather name="lock" size={12} color="#6B7280" />
-                                    <Text className="text-gray-600 text-xs ml-1 font-bold">
-                                        {lockedRecipients.length > 0 ? `${lockedRecipients.length} Recipients` : 'Locked'}
-                                    </Text>
-                                </View>
-                            ) : (
-                                <Feather name="chevron-right" size={20} color="#9CA3AF" />
-                            )}
-                        </View>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity className="flex-row items-center justify-between py-3 border-t border-gray-50">
-                        <Text className="text-base text-gray-900">Add Location</Text>
-                        <Feather name="chevron-right" size={20} color="#9CA3AF" />
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
-        </KeyboardAvoidingView>
-    );
-
+    // ── COMPOSE MODE (default) ──
     return (
         <View
             className="flex-1 bg-gray-50 items-center"
-            style={Platform.OS === 'web' ? ({ height: '100%' } as any) : { flex: 1 }}
+            style={Platform.OS === 'web' ? { height: '100vh' as any } : { flex: 1 }}
         >
-            <View className="w-full max-w-md flex-1 bg-white shadow-sm overflow-hidden flex flex-col">
-                <SafeAreaView className="flex-1 bg-white" edges={['top']}>
-                    <Stack.Screen options={{ headerShown: false }} />
-                    {/* Header */}
-                    <View className={`flex-row items-center justify-between px-4 py-3 border-b ${step === 'EDITOR' ? 'bg-black border-gray-800' : 'bg-white border-gray-100'}`}>
-                        <TouchableOpacity onPress={handleBack} className="p-2 -ml-2">
-                            <Feather name="chevron-left" size={26} color={step === 'EDITOR' ? 'white' : '#1F2937'} />
+            <View className="w-full max-w-md flex-1 bg-white shadow-sm overflow-hidden">
+                <Stack.Screen options={{ headerShown: false }} />
+
+                {/* Top Bar */}
+                <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-100 bg-white">
+                    <TouchableOpacity onPress={() => router.back()}>
+                        <Feather name="x" size={22} color="#111827" />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={handlePost}
+                        disabled={!hasContent}
+                        className={`px-5 py-1.5 rounded-full ${hasContent ? 'bg-sky-500' : 'bg-sky-300'}`}
+                    >
+                        <Text className="text-white font-bold text-[14px]">{isReplyMode ? 'Reply' : 'Post'}</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    className="flex-1"
+                >
+                    <ScrollView className="flex-1" keyboardShouldPersistTaps="handled">
+                        <View className="px-4 pt-4">
+                            {/* Context Indicator */}
+                            <View className="flex-row items-start mb-3">
+                                <View className="w-[2px] h-6 bg-gray-300 ml-[18px] mr-3 mt-1 rounded-full" />
+                                <Text className="text-gray-500 text-[14px]">
+                                    {isReplyMode ? (
+                                        <>Replying to <Text className="text-sky-500">@{username?.toLowerCase()}</Text></>
+                                    ) : (
+                                        <>Posting to <Text className="text-sky-500">@community_roots</Text></>
+                                    )}
+                                </Text>
+                            </View>
+
+                            {/* Input Area */}
+                            <View className="flex-row items-start">
+                                <Image
+                                    source={{ uri: currentUserAvatar }}
+                                    className="w-9 h-9 rounded-full bg-gray-200 mr-3"
+                                />
+                                <TextInput
+                                    ref={inputRef}
+                                    className="flex-1 text-gray-900 text-[16px] leading-5 pt-1"
+                                    placeholder={isReplyMode ? 'Post your reply' : "What's on your mind?"}
+                                    placeholderTextColor="#9CA3AF"
+                                    multiline
+                                    autoFocus={isNarrow}
+                                    value={postText}
+                                    onChangeText={setPostText}
+                                    style={{ minHeight: isReplyMode ? 60 : 80, textAlignVertical: 'top', outlineStyle: 'none' as any }}
+                                />
+                            </View>
+
+                            {/* Attached Images — Full-width with PERSISTED filters */}
+                            {images.length > 0 && (
+                                <View className="mt-3 ml-12">
+                                    {images.length === 1 ? (
+                                        <View className="relative">
+                                            <TouchableOpacity activeOpacity={0.85} onPress={() => openEditor(0)}>
+                                                <View className="relative overflow-hidden rounded-2xl">
+                                                    <Image
+                                                        source={{ uri: images[0] }}
+                                                        className="w-full bg-gray-100"
+                                                        style={[
+                                                            { aspectRatio: 4 / 3 },
+                                                            buildFilterStyle(imageFilters[0] ?? DEFAULT_FILTER) as any,
+                                                        ]}
+                                                        contentFit="cover"
+                                                    />
+                                                    <View
+                                                        className={`absolute inset-0 pointer-events-none ${getOverlayClass((imageFilters[0] ?? DEFAULT_FILTER).filter)}`}
+                                                    />
+                                                </View>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={() => removeImage(0)}
+                                                className="absolute top-2 right-2 bg-black/60 rounded-full p-1"
+                                            >
+                                                <Feather name="x" size={16} color="white" />
+                                            </TouchableOpacity>
+                                            {/* Edit indicator */}
+                                            {(imageFilters[0] && imageFilters[0].filter !== 'Normal') && (
+                                                <View className="absolute bottom-2 left-2 bg-black/50 rounded-full px-2 py-0.5 flex-row items-center">
+                                                    <Feather name="sliders" size={12} color="white" />
+                                                    <Text className="text-white text-[11px] ml-1 font-medium">{imageFilters[0].filter}</Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                    ) : (
+                                        <View className="flex-row flex-wrap" style={{ gap: 4 }}>
+                                            {images.map((uri, index) => {
+                                                const fs = imageFilters[index] ?? DEFAULT_FILTER;
+                                                return (
+                                                    <View
+                                                        key={index}
+                                                        className="relative overflow-hidden rounded-xl"
+                                                        style={{
+                                                            width: images.length === 3 && index === 0
+                                                                ? '100%'
+                                                                : '48.5%' as any,
+                                                            aspectRatio: images.length === 3 && index === 0
+                                                                ? 16 / 9
+                                                                : 1,
+                                                        }}
+                                                    >
+                                                        <TouchableOpacity
+                                                            activeOpacity={0.85}
+                                                            onPress={() => openEditor(index)}
+                                                            className="flex-1"
+                                                        >
+                                                            <Image
+                                                                source={{ uri }}
+                                                                className="w-full h-full bg-gray-100"
+                                                                style={buildFilterStyle(fs) as any}
+                                                                contentFit="cover"
+                                                            />
+                                                            <View
+                                                                className={`absolute inset-0 pointer-events-none ${getOverlayClass(fs.filter)}`}
+                                                            />
+                                                        </TouchableOpacity>
+                                                        <TouchableOpacity
+                                                            onPress={() => removeImage(index)}
+                                                            className="absolute top-1.5 right-1.5 bg-black/60 rounded-full p-0.5"
+                                                        >
+                                                            <Feather name="x" size={14} color="white" />
+                                                        </TouchableOpacity>
+                                                        {fs.filter !== 'Normal' && (
+                                                            <View className="absolute bottom-1 left-1 bg-black/50 rounded-full px-1.5 py-0.5">
+                                                                <Text className="text-white text-[10px] font-medium">{fs.filter}</Text>
+                                                            </View>
+                                                        )}
+                                                    </View>
+                                                );
+                                            })}
+                                        </View>
+                                    )}
+                                </View>
+                            )}
+                        </View>
+                    </ScrollView>
+
+                    {/* Bottom Toolbar */}
+                    <View className="flex-row items-center px-4 py-3 border-t border-gray-100 bg-white">
+                        <TouchableOpacity className="mr-5" onPress={pickImages}>
+                            <Feather name="image" size={20} color="#0EA5E9" />
                         </TouchableOpacity>
-
-                        <Text className={`text-base font-bold ${step === 'EDITOR' ? 'text-white' : 'text-gray-900'}`}>
-                            {step === 'PICKER' ? 'New Post' : step === 'EDITOR' ? 'Edit' : 'New Post'}
-                        </Text>
-
-                        <TouchableOpacity
-                            onPress={handleNext}
-                            disabled={step === 'PICKER' && images.length === 0}
-                            className="p-2 -mr-2"
-                        >
-                            <Text className={`font-bold text-base ${(step === 'PICKER' && images.length === 0) ? 'text-gray-300' : 'text-sky-500'
-                                }`}>
-                                {step === 'POST' ? 'Share' : 'Next'}
-                            </Text>
+                        <TouchableOpacity className="mr-5">
+                            <Feather name="smile" size={20} color="#0EA5E9" />
+                        </TouchableOpacity>
+                        <TouchableOpacity>
+                            <Feather name="map-pin" size={20} color="#0EA5E9" />
                         </TouchableOpacity>
                     </View>
-
-                    {step === 'PICKER' && renderPicker()}
-                    {step === 'EDITOR' && renderEditor()}
-                    {step === 'POST' && renderPost()}
-
-                </SafeAreaView>
+                </KeyboardAvoidingView>
             </View>
         </View>
     );

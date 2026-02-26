@@ -19,8 +19,8 @@ interface Props {
         bio: string;
         hasActiveChain?: boolean;
     };
-    activeTab: 'Post' | 'Following' | 'Media';
-    onTabChange: (tab: 'Post' | 'Following' | 'Media') => void;
+    activeTab: 'Post' | 'Media';
+    onTabChange: (tab: 'Post' | 'Media') => void;
 }
 
 export default function ProfileInfo({ user, activeTab, onTabChange }: Props) {
@@ -114,13 +114,11 @@ export default function ProfileInfo({ user, activeTab, onTabChange }: Props) {
 
             {/* Profile Tabs (Twitter Style) */}
             <View className="flex-row mt-4 pt-1 border-b border-gray-100 pb-0">
-                {(['Post', 'Following', 'Media'] as const).map((tab) => {
+                {(['Post', 'Media'] as const).map((tab) => {
                     const isActive = activeTab === tab;
                     const label = tab === 'Post'
                         ? t('profile.tab.post')
-                        : tab === 'Following'
-                            ? t('profile.tab.following')
-                            : t('profile.tab.media');
+                        : t('profile.tab.media');
                     return (
                         <TouchableOpacity
                             key={tab}

@@ -1,7 +1,7 @@
 import { Feather } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, usePathname, useRouter } from 'expo-router';
 import React from 'react';
-import { useWindowDimensions } from 'react-native';
+import { TouchableOpacity, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DESKTOP_BREAKPOINT } from '../../constants/Layout';
 import { useI18n } from '../../lib/i18n';
@@ -18,10 +18,12 @@ function TabBarIcon(props: {
 
 export default function TabLayout() {
   const { t } = useI18n();
+  const router = useRouter();
 
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const isDesktop = width >= DESKTOP_BREAKPOINT;
+  const pathname = usePathname();
 
   return (
     <>
@@ -117,6 +119,38 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
+
+      {/* Floating Action Button — Home feed only, Mobile only */}
+      {!isDesktop && pathname === '/' && (() => {
+        const maxContentWidth = 448; // max-w-md
+        const contentWidth = Math.min(width, maxContentWidth);
+        const contentRight = (width - contentWidth) / 2;
+        return (
+          <TouchableOpacity
+            onPress={() => router.push('/feed/create')}
+            style={{
+              position: 'absolute',
+              bottom: 76 + insets.bottom,
+              right: contentRight + 16,
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              backgroundColor: '#0EA5E9',
+              alignItems: 'center',
+              justifyContent: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 4,
+              elevation: 5,
+              zIndex: 100,
+            }}
+            activeOpacity={0.8}
+          >
+            <Feather name="plus" size={28} color="white" />
+          </TouchableOpacity>
+        );
+      })()}
     </>
   );
 }

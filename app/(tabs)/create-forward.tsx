@@ -1,5 +1,5 @@
 import { Feather } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
@@ -11,6 +11,7 @@ import { useI18n } from '../../lib/i18n';
 
 export default function CreateForwardScreen() {
     const router = useRouter();
+    const { from } = useLocalSearchParams<{ from?: string }>();
     const { t } = useI18n();
 
     const [title, setTitle] = useState('');
@@ -76,9 +77,20 @@ export default function CreateForwardScreen() {
                 <View className="flex-1 bg-white">
 
                     {/* Header */}
-                    <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-50 bg-white z-10">
-                        <TouchableOpacity onPress={() => router.back()} className="p-2 -ml-2">
-                            <Feather name="chevron-left" size={26} color="#4B5563" />
+                    <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-100 bg-white z-10">
+                        <TouchableOpacity
+                            onPress={() => {
+                                if (from) {
+                                    router.replace(from as any);
+                                } else if (router.canGoBack()) {
+                                    router.back();
+                                } else {
+                                    router.replace('/' as any);
+                                }
+                            }}
+                            className="w-8"
+                        >
+                            <Feather name="arrow-left" size={24} color="#111827" />
                         </TouchableOpacity>
 
                         <Text className="text-base font-bold text-gray-900">{t('create.newChain')}</Text>

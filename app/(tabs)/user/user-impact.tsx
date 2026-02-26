@@ -218,7 +218,7 @@ export default function UserImpactScreen() {
                 <View className="flex-row items-center justify-between px-4 py-3 border-b border-gray-100 bg-white z-20">
                     <View className="w-8">
                         <TouchableOpacity onPress={handleGoBack}>
-                            <Feather name="arrow-left" size={24} color="black" />
+                            <Feather name="arrow-left" size={24} color="#111827" />
                         </TouchableOpacity>
                     </View>
                     <View className="items-center justify-center">

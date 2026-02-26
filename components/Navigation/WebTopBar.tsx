@@ -52,11 +52,8 @@ const WebTopBar = React.memo(function WebTopBar() {
                     </TouchableOpacity>
                 </View>
 
-                {/* Right Action Area - Right Section */}
-                <View className="flex-1 flex-row justify-end items-center gap-4">
-                    {/* Placeholder for future use (e.g. Notifications) */}
-                    <View className="w-8" />
-                </View>
+                {/* Right spacer to balance layout */}
+                <View className="flex-1" />
             </View>
         </View>
 

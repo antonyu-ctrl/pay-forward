@@ -53,7 +53,7 @@ export default function FollowingScreen() {
                     {/* Header */}
                     <View className="flex-row items-center justify-between px-4 py-3 bg-white border-b border-gray-100">
                         <TouchableOpacity onPress={handleGoBack} className="w-8">
-                            <Feather name="arrow-left" size={24} color="black" />
+                            <Feather name="arrow-left" size={24} color="#111827" />
                         </TouchableOpacity>
                         <Text className="text-lg font-bold text-gray-900">{title}</Text>
                         <View className="w-8" />
