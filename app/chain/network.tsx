@@ -1,16 +1,18 @@
 import { Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Dimensions, PanResponder, Platform, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { Dimensions, Platform, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
-    runOnJS,
-    useAnimatedReaction,
+    Extrapolation,
+    interpolate,
+    SharedValue,
     useAnimatedStyle,
     useSharedValue,
     withSpring,
 } from 'react-native-reanimated';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Svg, { Line } from 'react-native-svg';
 import { MOCK_NETWORK, NetworkNode } from '../../data/mockChains';
 import { useI18n } from '../../lib/i18n';
@@ -21,43 +23,124 @@ const MAX_NODE_SIZE = 100;
 const MIN_NODE_SIZE = 32;
 const MAX_DIST = 350;
 
+// ─── Per-node component: sizing runs entirely on the UI thread ───
+interface NodeItemProps {
+    node: NetworkNode;
+    translateX: SharedValue<number>;
+    translateY: SharedValue<number>;
+    scale: SharedValue<number>;
+    containerW: SharedValue<number>;
+    containerH: SharedValue<number>;
+}
+
+function NodeItem({ node, translateX, translateY, scale, containerW, containerH }: NodeItemProps) {
+    const isRoot = node.id === 'anton';
+
+    const animatedStyle = useAnimatedStyle(() => {
+        const cw = containerW.value || 400;
+        const ch = containerH.value || 600;
+        // RN transforms scale from the view's center, so center node (x=0,y=0)
+        // maps to screen (cw/2 + translateX) regardless of scale.
+        const screenX = cw / 2 + node.x * scale.value + translateX.value;
+        const screenY = ch / 2 + node.y * scale.value + translateY.value;
+        const dx = screenX - cw / 2;
+        const dy = screenY - ch / 2;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        const size = interpolate(
+            dist,
+            [0, MAX_DIST],
+            [MAX_NODE_SIZE, MIN_NODE_SIZE],
+            Extrapolation.CLAMP,
+        );
+        const opacity = interpolate(
+            dist,
+            [0, MAX_DIST * 0.5, MAX_DIST],
+            [1, 0.85, 0.4],
+            Extrapolation.CLAMP,
+        );
+
+        return {
+            position: 'absolute' as const,
+            left: CENTER + node.x - size / 2,
+            top: CENTER + node.y - size / 2,
+            width: size,
+            alignItems: 'center' as const,
+            opacity,
+        };
+    });
+
+    const avatarStyle = useAnimatedStyle(() => {
+        const cw = containerW.value || 400;
+        const ch = containerH.value || 600;
+        const screenX = cw / 2 + node.x * scale.value + translateX.value;
+        const screenY = ch / 2 + node.y * scale.value + translateY.value;
+        const dx = screenX - cw / 2;
+        const dy = screenY - ch / 2;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        const size = interpolate(
+            dist,
+            [0, MAX_DIST],
+            [MAX_NODE_SIZE, MIN_NODE_SIZE],
+            Extrapolation.CLAMP,
+        );
+
+        return {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+        };
+    });
+
+    return (
+        <Animated.View style={animatedStyle}>
+            <Animated.View style={[{ overflow: 'hidden' }, avatarStyle]}>
+                <Image
+                    source={{ uri: node.avatarUrl }}
+                    style={{ width: '100%', height: '100%', borderRadius: 9999 } as any}
+                    contentFit="cover"
+                />
+            </Animated.View>
+            <Text
+                style={{
+                    fontSize: isRoot ? 12 : 9,
+                    fontWeight: isRoot ? '700' : '500',
+                    color: '#64748b',
+                    marginTop: 2,
+                    textAlign: 'center',
+                }}
+                numberOfLines={1}
+            >
+                {node.username}
+            </Text>
+        </Animated.View>
+    );
+}
+
+// ─── Main screen ─────────────────────────────────────────────────
 export default function NetworkScreen() {
     const router = useRouter();
     const { t } = useI18n();
 
-    // Shared values for smooth canvas animation (UI thread)
+    // Shared values for canvas animation
     const translateX = useSharedValue(0);
     const translateY = useSharedValue(0);
     const scale = useSharedValue(1);
 
-    // Refs for gesture tracking
-    const offsetX = useRef(0);
-    const offsetY = useRef(0);
-    const lastScale = useRef(1);
-    const lastPinchDist = useRef(0);
+    // Gesture context (saved state at gesture start)
+    const savedTranslateX = useSharedValue(0);
+    const savedTranslateY = useSharedValue(0);
+    const savedScale = useSharedValue(1);
 
-    // JS-thread mirror of shared values for dynamic node sizing
-    const [transform, setTransform] = useState({ x: 0, y: 0, s: 1 });
-    const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
-
-    const syncTransform = useCallback((x: number, y: number, s: number) => {
-        setTransform({ x, y, s });
-    }, []);
-
-    useAnimatedReaction(
-        () => ({
-            x: translateX.value,
-            y: translateY.value,
-            s: scale.value,
-        }),
-        (current) => {
-            runOnJS(syncTransform)(current.x, current.y, current.s);
-        }
-    );
+    // Container size as shared values so NodeItem worklets can read them
+    const containerW = useSharedValue(0);
+    const containerH = useSharedValue(0);
 
     const onContainerLayout = useCallback((e: any) => {
         const { width, height } = e.nativeEvent.layout;
-        setContainerSize({ w: width, h: height });
+        containerW.value = width;
+        containerH.value = height;
     }, []);
 
     // Build ALL connection edges (full graph, deduplicated)
@@ -78,75 +161,37 @@ export default function NetworkScreen() {
         return edges;
     }, []);
 
-    // Canvas origin relative to container
+    // Canvas initial position (centered in container)
     const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
-    const cw = containerSize.w || (SCREEN_WIDTH > 448 ? 448 : SCREEN_WIDTH);
-    const ch = containerSize.h || (SCREEN_HEIGHT - 120);
+    const cw = SCREEN_WIDTH > 448 ? 448 : SCREEN_WIDTH;
+    const ch = SCREEN_HEIGHT - 120;
     const canvasLeft = cw / 2 - CENTER;
     const canvasTop = ch / 2 - CENTER;
 
-    // Dynamic node size: nodes closer to viewport center appear larger
-    // RN transforms scale from the view's center, so the center node (x=0,y=0)
-    // maps to screen (canvasLeft + CENTER + translateX, canvasTop + CENTER + translateY)
-    // regardless of scale. This keeps zoom from shrinking the center avatar.
-    const getNodeSize = useCallback((node: NetworkNode) => {
-        const screenX = canvasLeft + CENTER + node.x * transform.s + transform.x;
-        const screenY = canvasTop + CENTER + node.y * transform.s + transform.y;
-        const dx = screenX - cw / 2;
-        const dy = screenY - ch / 2;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const ratio = Math.min(dist / MAX_DIST, 1);
-        // Gradual curve — slightly steeper than linear for visible layer distinction
-        const t = Math.pow(ratio, 0.85);
-        return MAX_NODE_SIZE - t * (MAX_NODE_SIZE - MIN_NODE_SIZE);
-    }, [transform, cw, ch, canvasLeft, canvasTop]);
-
-    // Interpolate border color from bright sky-blue (close) to dark slate (far)
-    const getBorderColor = (size: number) => {
-        const t = 1 - (size - MIN_NODE_SIZE) / (MAX_NODE_SIZE - MIN_NODE_SIZE);
-        const r = Math.round(14 + t * (51 - 14));
-        const g = Math.round(165 + t * (65 - 165));
-        const b = Math.round(233 + t * (85 - 233));
-        return `rgb(${r},${g},${b})`;
-    };
-
-    const getDistance = (touches: any) => {
-        const [t1, t2] = [touches[0], touches[1]];
-        const dx = t1.pageX - t2.pageX;
-        const dy = t1.pageY - t2.pageY;
-        return Math.sqrt(dx * dx + dy * dy);
-    };
-
-    const panResponder = useRef(
-        PanResponder.create({
-            onStartShouldSetPanResponder: () => true,
-            onMoveShouldSetPanResponder: () => true,
-            onPanResponderGrant: (evt) => {
-                if (evt.nativeEvent.touches.length === 2) {
-                    lastPinchDist.current = getDistance(evt.nativeEvent.touches);
-                }
-            },
-            onPanResponderMove: (evt, gestureState) => {
-                if (evt.nativeEvent.touches.length === 2) {
-                    const dist = getDistance(evt.nativeEvent.touches);
-                    if (lastPinchDist.current > 0) {
-                        const pinchScale = dist / lastPinchDist.current;
-                        const newScale = Math.max(0.4, Math.min(3, lastScale.current * pinchScale));
-                        scale.value = newScale;
-                    }
-                } else {
-                    translateX.value = offsetX.current + gestureState.dx;
-                    translateY.value = offsetY.current + gestureState.dy;
-                }
-            },
-            onPanResponderRelease: () => {
-                offsetX.current = translateX.value;
-                offsetY.current = translateY.value;
-                lastScale.current = scale.value;
-                lastPinchDist.current = 0;
-            },
+    // ─── Gestures (modern Gesture API) ───
+    const panGesture = Gesture.Pan()
+        .onStart(() => {
+            'worklet';
+            savedTranslateX.value = translateX.value;
+            savedTranslateY.value = translateY.value;
         })
-    ).current;
+        .onUpdate((e) => {
+            'worklet';
+            translateX.value = savedTranslateX.value + e.translationX;
+            translateY.value = savedTranslateY.value + e.translationY;
+        });
+
+    const pinchGesture = Gesture.Pinch()
+        .onStart(() => {
+            'worklet';
+            savedScale.value = scale.value;
+        })
+        .onUpdate((e) => {
+            'worklet';
+            scale.value = Math.max(0.4, Math.min(3, savedScale.value * e.scale));
+        });
+
+    const composed = Gesture.Simultaneous(panGesture, pinchGesture);
 
     const animatedCanvasStyle = useAnimatedStyle(() => ({
         transform: [
@@ -156,56 +201,13 @@ export default function NetworkScreen() {
         ],
     }));
 
+    // Web mouse wheel zoom
     const handleWheel = useCallback((e: any) => {
         e.preventDefault?.();
         const delta = e.deltaY > 0 ? -0.08 : 0.08;
         const newScale = Math.max(0.4, Math.min(3, scale.value + delta));
         scale.value = withSpring(newScale, { damping: 20, stiffness: 200 });
-        lastScale.current = newScale;
     }, [scale]);
-
-    const renderNode = (node: NetworkNode) => {
-        const size = getNodeSize(node);
-        const x = CENTER + node.x - size / 2;
-        const y = CENTER + node.y - size / 2;
-        const isRoot = node.id === 'anton';
-        const textColor = getBorderColor(size);
-
-        return (
-            <View
-                key={node.id}
-                style={{
-                    position: 'absolute',
-                    left: x,
-                    top: y,
-                    width: size,
-                    alignItems: 'center',
-                }}
-            >
-                <Image
-                    source={{ uri: node.avatarUrl }}
-                    style={{
-                        width: size,
-                        height: size,
-                        borderRadius: size / 2,
-                    }}
-                    contentFit="cover"
-                />
-                <Text
-                    style={{
-                        fontSize: Math.max(7, size > 50 ? 12 : size > 30 ? 10 : 8),
-                        fontWeight: isRoot ? '700' : '500',
-                        color: textColor,
-                        marginTop: 2,
-                        textAlign: 'center',
-                    }}
-                    numberOfLines={1}
-                >
-                    {node.username}
-                </Text>
-            </View>
-        );
-    };
 
     return (
         <View
@@ -235,44 +237,55 @@ export default function NetworkScreen() {
                     <View
                         className="flex-1 overflow-hidden bg-white"
                         onLayout={onContainerLayout}
-                        {...panResponder.panHandlers}
                         {...(Platform.OS === 'web' ? { onWheel: handleWheel } : {})}
                     >
-                        <Animated.View
-                            style={[
-                                {
-                                    width: CANVAS_SIZE,
-                                    height: CANVAS_SIZE,
-                                    position: 'absolute',
-                                    left: canvasLeft,
-                                    top: canvasTop,
-                                },
-                                animatedCanvasStyle,
-                            ]}
-                        >
-                            {/* Connection lines — thin and consistent */}
-                            <Svg
-                                width={CANVAS_SIZE}
-                                height={CANVAS_SIZE}
-                                style={{ position: 'absolute', top: 0, left: 0 }}
+                        <GestureDetector gesture={composed}>
+                            <Animated.View
+                                style={[
+                                    {
+                                        width: CANVAS_SIZE,
+                                        height: CANVAS_SIZE,
+                                        position: 'absolute',
+                                        left: canvasLeft,
+                                        top: canvasTop,
+                                    },
+                                    animatedCanvasStyle,
+                                ]}
                             >
-                                {allEdges.map(([from, to]) => (
-                                    <Line
-                                        key={`${from.id}-${to.id}`}
-                                        x1={CENTER + from.x}
-                                        y1={CENTER + from.y}
-                                        x2={CENTER + to.x}
-                                        y2={CENTER + to.y}
-                                        stroke="#94A3B8"
-                                        strokeWidth={0.5}
-                                        strokeDasharray="2,2"
+                                {/* Connection lines — thin dotted */}
+                                <Svg
+                                    width={CANVAS_SIZE}
+                                    height={CANVAS_SIZE}
+                                    style={{ position: 'absolute', top: 0, left: 0 }}
+                                >
+                                    {allEdges.map(([from, to]) => (
+                                        <Line
+                                            key={`${from.id}-${to.id}`}
+                                            x1={CENTER + from.x}
+                                            y1={CENTER + from.y}
+                                            x2={CENTER + to.x}
+                                            y2={CENTER + to.y}
+                                            stroke="#94A3B8"
+                                            strokeWidth={0.5}
+                                            strokeDasharray="2,2"
+                                        />
+                                    ))}
+                                </Svg>
+
+                                {/* Nodes */}
+                                {MOCK_NETWORK.map((node) => (
+                                    <NodeItem
+                                        key={node.id}
+                                        node={node}
+                                        translateX={translateX}
+                                        translateY={translateY}
+                                        scale={scale}
+                                        containerW={containerW}
+                                        containerH={containerH}
                                     />
                                 ))}
-                            </Svg>
-
-                            {/* Nodes */}
-                            {MOCK_NETWORK.map(renderNode)}
-                        </Animated.View>
+                            </Animated.View>
+                        </GestureDetector>
 
                         {/* Zoom controls */}
                         <View className="absolute bottom-6 right-4 gap-2">
@@ -281,7 +294,6 @@ export default function NetworkScreen() {
                                 onPress={() => {
                                     const newScale = Math.min(3, scale.value + 0.3);
                                     scale.value = withSpring(newScale, { damping: 20, stiffness: 200 });
-                                    lastScale.current = newScale;
                                 }}
                             >
                                 <Feather name="plus" size={20} color="#374151" />
@@ -291,7 +303,6 @@ export default function NetworkScreen() {
                                 onPress={() => {
                                     const newScale = Math.max(0.4, scale.value - 0.3);
                                     scale.value = withSpring(newScale, { damping: 20, stiffness: 200 });
-                                    lastScale.current = newScale;
                                 }}
                             >
                                 <Feather name="minus" size={20} color="#374151" />
@@ -302,9 +313,9 @@ export default function NetworkScreen() {
                                     translateX.value = withSpring(0, { damping: 20, stiffness: 200 });
                                     translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
                                     scale.value = withSpring(1, { damping: 20, stiffness: 200 });
-                                    offsetX.current = 0;
-                                    offsetY.current = 0;
-                                    lastScale.current = 1;
+                                    savedTranslateX.value = 0;
+                                    savedTranslateY.value = 0;
+                                    savedScale.value = 1;
                                 }}
                             >
                                 <Feather name="maximize" size={18} color="#374151" />
